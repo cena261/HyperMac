@@ -45,6 +45,7 @@ public class DisplayManager: ObservableObject {
     }
     @Published public var isRefreshing: Bool = false
     @Published public var hasAccessibility: Bool = false
+    @Published public var selectedMainTab: Int = 0
     @Published public var alertMessage: String? = nil
     @Published public var showAlert: Bool = false
 

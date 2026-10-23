@@ -107,6 +107,39 @@ public class BatteryManager: ObservableObject {
     @Published public var calibrationMessage: String = ""
     private var restingTimer: Timer?
 
+    // Auto-Scheduled Calibration
+    @Published public var isAutoCalibrationEnabled: Bool = true {
+        didSet {
+            UserDefaults.standard.set(isAutoCalibrationEnabled, forKey: "battery_auto_calibration_enabled")
+        }
+    }
+
+    @Published public var calibrationIntervalDays: Int = 30 {
+        didSet {
+            UserDefaults.standard.set(calibrationIntervalDays, forKey: "battery_calibration_interval_days")
+        }
+    }
+
+    @Published public var lastCalibrationDate: Date? = nil {
+        didSet {
+            if let date = lastCalibrationDate {
+                UserDefaults.standard.set(date.timeIntervalSince1970, forKey: "battery_last_calibration_timestamp")
+            }
+        }
+    }
+
+    public var nextScheduledCalibrationDate: Date {
+        let base = lastCalibrationDate ?? Date()
+        return Calendar.current.date(byAdding: .day, value: calibrationIntervalDays, to: base) ?? Date()
+    }
+
+    public var daysRemainingUntilCalibration: Int {
+        let now = Date()
+        let next = nextScheduledCalibrationDate
+        let diff = Calendar.current.dateComponents([.day], from: now, to: next).day ?? 0
+        return max(0, diff)
+    }
+
     public var tempAlertThreshold: Double = 38.0 // Warning at 38°C
     private var lastTempAlertDate: Date? = nil
     private var lastExtDisplayAlertDate: Date? = nil
@@ -157,6 +190,28 @@ public class BatteryManager: ObservableObject {
         }
 
         self.isTopUpActive = UserDefaults.standard.bool(forKey: "battery_top_up_active")
+
+        if UserDefaults.standard.object(forKey: "battery_auto_calibration_enabled") != nil {
+            self.isAutoCalibrationEnabled = UserDefaults.standard.bool(forKey: "battery_auto_calibration_enabled")
+        } else {
+            self.isAutoCalibrationEnabled = true
+        }
+
+        let savedInterval = UserDefaults.standard.integer(forKey: "battery_calibration_interval_days")
+        if savedInterval >= 15 && savedInterval <= 120 {
+            self.calibrationIntervalDays = savedInterval
+        } else {
+            self.calibrationIntervalDays = 30
+        }
+
+        let lastCalTimestamp = UserDefaults.standard.double(forKey: "battery_last_calibration_timestamp")
+        if lastCalTimestamp > 0 {
+            self.lastCalibrationDate = Date(timeIntervalSince1970: lastCalTimestamp)
+        } else {
+            let now = Date()
+            self.lastCalibrationDate = now
+            UserDefaults.standard.set(now.timeIntervalSince1970, forKey: "battery_last_calibration_timestamp")
+        }
 
         // Setup Sleep Observers
         setupSleepObservers()
@@ -260,6 +315,7 @@ public class BatteryManager: ObservableObject {
                 guard let self = self else { return }
                 self.refreshBatteryInfo()
                 self.checkSMCBypassStatus()
+                self.checkAutoCalibrationSchedule()
                 self.evaluatePowerManagement()
             }
         }
@@ -544,9 +600,32 @@ public class BatteryManager: ObservableObject {
         }
     }
 
-    // MARK: - Battery Calibration API
+    // MARK: - Battery Calibration API & Auto-Scheduler
 
-    public func startCalibration() {
+    public func checkAutoCalibrationSchedule() {
+        guard isAutoCalibrationEnabled && calibrationState == .idle && isHelperInstalled else { return }
+        guard let last = lastCalibrationDate else {
+            lastCalibrationDate = Date()
+            return
+        }
+
+        let now = Date()
+        let daysPassed = Calendar.current.dateComponents([.day], from: last, to: now).day ?? 0
+
+        if daysPassed >= calibrationIntervalDays {
+            // Reached schedule!
+            if isPluggedIn {
+                startCalibration(isAutomatic: true)
+            } else {
+                sendNotification(
+                    title: "📅 Đến lịch hiệu chuẩn pin (\(calibrationIntervalDays) ngày)",
+                    body: "Hãy cắm sạc để HyperMac tự động cân bằng điện áp các cell và khôi phục độ chính xác cho mạch pin!"
+                )
+            }
+        }
+    }
+
+    public func startCalibration(isAutomatic: Bool = false) {
         guard isHelperInstalled else {
             statusMessage = "Cần cấp quyền SMC để hiệu chuẩn pin"
             return
@@ -554,8 +633,10 @@ public class BatteryManager: ObservableObject {
         calibrationState = .discharging
         calibrationMessage = "Bước 1/3: Xả pin xuống 20% (Hiện tại: \(currentLevel)%)"
         setChargingInhibited(true)
+
+        let reason = isAutomatic ? "Tự động theo lịch \(calibrationIntervalDays) ngày" : "Thủ công"
         sendNotification(
-            title: "🔬 Bắt đầu hiệu chuẩn pin (BMS Calibration)",
+            title: "🔬 Bắt đầu hiệu chuẩn pin (\(reason))",
             body: "Bước 1: Máy đang xả pin xuống 20%. Bạn có thể tiếp tục sử dụng máy bình thường."
         )
     }
@@ -570,7 +651,8 @@ public class BatteryManager: ObservableObject {
 
     private func completeCalibration() {
         calibrationState = .completed
-        calibrationMessage = "🎉 Hiệu chuẩn hoàn tất! Đã tự động khóa lại ở \(chargeLimit)%"
+        self.lastCalibrationDate = Date()
+        calibrationMessage = "🎉 Hiệu chuẩn hoàn tất! Lịch tiếp theo sau \(calibrationIntervalDays) ngày."
         setChargingInhibited(true)
         sendNotification(
             title: "🎉 Hiệu chuẩn pin thành công!",

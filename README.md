@@ -1,6 +1,6 @@
 # HyperMac — The Ultimate macOS All-in-One Power Utility Suite
 
-[![Version](https://img.shields.io/badge/version-v1.3.0-blue.svg)](https://github.com/khacdai24/HyperMac)
+[![Version](https://img.shields.io/badge/version-v1.3.1-blue.svg)](https://github.com/khacdai24/HyperMac)
 [![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-black.svg)](https://github.com/khacdai24/HyperMac)
 [![Architecture](https://img.shields.io/badge/architecture-Apple%20Silicon%20(ARM64)-brightgreen.svg)](https://github.com/khacdai24/HyperMac)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
@@ -32,12 +32,14 @@ Thiết kế chuyên sâu dành cho người dùng kỹ tính và các dòng má
 - **Rã đông (SIGCONT):** Tiếp tục hoạt động tức thì ngay khi cần sử dụng tiếp.
 - **Cảnh báo nhiệt độ pin (> 38°C):** Cảnh báo người dùng kê thoáng máy và gợi ý đóng băng ứng dụng nặng để hạ nhiệt tức thì.
 
-#### 4. Hiệu Chuẩn Mạch Pin Định Kỳ (Texas Instruments bq40z651 BMS Calibration)
-- Pin duy trì ở mức 80% trong nhiều tháng liên tục có thể khiến chip quản lý pin BMS bị sai lệch thước đo dung lượng thực.
-- Quy trình tự động 3 bước:
+#### 4. Đặt Lịch Tự Động Hiệu Chuẩn Mạch Pin (Scheduled Texas Instruments BMS Calibration)
+- Pin duy trì ở mức 80% liên tục có thể khiến chip quản lý pin BMS bị sai lệch thước đo dung lượng thực.
+- **Tự động đặt lịch định kỳ:** Người dùng không cần để ý hay canh chừng. HyperMac cho phép hẹn lịch định kỳ: **Mỗi 30 ngày (Khuyến nghị chuẩn)**, **Mỗi 45 ngày** hoặc **Mỗi 60 ngày**.
+- **Tiến trình tự động khép kín:** Khi đến hẹn và máy đang cắm nguồn sạc AC, HyperMac tự động tiến hành chu trình 3 bước:
   1. *Bước 1: Xả pin tự nhiên xuống 20%*.
   2. *Bước 2: Sạc liên tục lên 100% để cân bằng điện áp các cell (Cell Balancing)*.
-  3. *Bước 3: Ngâm ổn định 15 phút và tự động khóa lại ở 80%* mà người dùng không cần phải canh chừng.
+  3. *Bước 3: Ngâm ổn định 15 phút và tự động khóa lại ở 80% SMC Bypass*.
+- Hiển thị ngày hiệu chuẩn gần nhất, ngày tiếp theo, số ngày đếm ngược và trạng thái chi tiết.
 
 #### 5. Bảng Đo Telemetry & Công Suất Watt Thời Gian Thực
 - **Công suất dòng điện vào/ra pin (Wattage):**
@@ -112,6 +114,18 @@ cd HyperMac
 ---
 
 ## 📝 Nhật Ký Phiên Bản (Changelog)
+
+### [v1.3.1] — 2026-10-23
+- **Tái Cấu Trúc Toàn Diện Giao Diện Menu Bar (Tabbed Navigation - Triệt tiêu lỗi che khuất):**
+  - Chuyển đổi từ bố cục cuộn dọc nguyên khối (bị tràn và che khuất nửa dưới) sang mô hình **3 Tab Độc Lập**:
+    - `🛡️ Pin & Phần cứng`: Trọn vẹn bảng điều khiển nguồn SMC, Sleep Guard, Đóng băng ứng dụng và Hiệu chuẩn.
+    - `🖥️ Màn hình`: Quản lý danh sách màn hình, thanh trượt độ sáng mượt mà, ngắt màn hình ảo và phím tắt F1/F2.
+    - `⚡️ Phím tắt & Cửa sổ`: Cấu hình AltTab `⌘ + Tab`, bộ chia cửa sổ Rectangle `⌥⌃←/→` và Mouse Chording.
+  - Tối ưu kích thước popover `380x570px`, bố cục thẻ thoáng đãng, sắc nét, đạt tỷ lệ vàng công thái học.
+- **Tự Động Hóa Đặt Lịch Hiệu Chuẩn Pin (Scheduled BMS Calibration):**
+  - Bổ sung tùy chọn hẹn lịch tự động định kỳ: **Mỗi 30 ngày (Khuyến nghị chuẩn)**, **Mỗi 45 ngày**, hoặc **Mỗi 60 ngày**.
+  - Hiển thị ngày hiệu chuẩn gần nhất, ngày tiếp theo, số ngày đếm ngược và trạng thái kích hoạt.
+  - Tự động phát hiện khi tới hẹn và đang cắm sạc AC để kích hoạt chu trình 3 bước (Xả $\rightarrow$ Cân bằng cell 100% $\rightarrow$ Tự động khóa lại ở 80% SMC Bypass) kèm thông báo hệ thống.
 
 ### [v1.3.0] — 2026-10-23
 - **Hoàn thiện Trục 2: Bảo vệ Phần cứng & Giữ máy tối đa (Hardware Care & Longevity)**:
