@@ -1,0 +1,31 @@
+#!/bin/bash
+# Display Control Power Management Helper
+
+if [ -x "/usr/local/bin/displaycontrol-smc" ]; then
+    SMC="/usr/local/bin/displaycontrol-smc"
+elif [ -x "/Applications/DisplayControl.app/Contents/Resources/smc" ]; then
+    SMC="/Applications/DisplayControl.app/Contents/Resources/smc"
+else
+    SMC="$(which smc 2>/dev/null || true)"
+fi
+
+if [ -z "$SMC" ] || [ ! -x "$SMC" ]; then
+    echo "Error: smc binary not found"
+    exit 1
+fi
+
+case "$1" in
+    status)
+        "$SMC" -k CHTE -r
+        ;;
+    charge-off)
+        "$SMC" -k CHTE -w 01000000
+        ;;
+    charge-on)
+        "$SMC" -k CHTE -w 00000000
+        ;;
+    *)
+        echo "Usage: $0 {status|charge-off|charge-on}"
+        exit 1
+        ;;
+esac
