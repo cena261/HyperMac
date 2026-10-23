@@ -1,6 +1,6 @@
 # HyperMac — The Ultimate macOS All-in-One Power Utility Suite
 
-[![Version](https://img.shields.io/badge/version-v1.2.0-blue.svg)](https://github.com/khacdai24/HyperMac)
+[![Version](https://img.shields.io/badge/version-v1.3.0-blue.svg)](https://github.com/khacdai24/HyperMac)
 [![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-black.svg)](https://github.com/khacdai24/HyperMac)
 [![Architecture](https://img.shields.io/badge/architecture-Apple%20Silicon%20(ARM64)-brightgreen.svg)](https://github.com/khacdai24/HyperMac)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
@@ -9,9 +9,50 @@
 
 ---
 
-## 🚀 Các Tính Năng Chính
+## 🚀 Các Trục Tính Năng Trọng Tâm
 
-### 1. 🪟 Chia Cửa Sổ & Đa Màn Hình (Thay thế hoàn toàn Rectangle)
+### 🛡️ TRỤC 2: BẢO VỆ PHẦN CỨNG & GIỮ MÁY TỐI ĐA (Hardware Care & Longevity)
+
+Thiết kế chuyên sâu dành cho người dùng kỹ tính và các dòng máy không quạt như **MacBook Air M2/M3**:
+
+#### 1. Chống Chai Pin Cấp Độ Vi Điều Khiển (SMC AC Bypass)
+- **Khóa sạc ở 80% (AC Bypass Mode):** Ghi trực tiếp vào thanh ghi SMC của Apple (`CHTE = 01000000`), ngắt sạc an toàn khi pin đạt 80%. Máy chuyển sang chạy điện trực tiếp từ củ sạc, triệt tiêu hoàn toàn hiện tượng chai pin, phồng pin do sạc nhồi 100%.
+- **Sạc đầy tạm thời (Top-Up):** Nút 1-chạm sạc đầy 100% khi chuẩn bị đi công tác hoặc cần mang máy ra ngoài.
+- **Tùy chọn ngưỡng khóa linh hoạt:** 70%, 80% (Khuyến nghị chuẩn), hoặc 90%.
+
+#### 2. Sleep Guard — Chống Tụt Pin & Chống Nóng Ngầm Khi Gập Máy
+- **Khóa cứng SMC khi gập máy:** Đảm bảo khi gập nắp máy lúc đang cắm sạc, phần cứng luôn duy trì lệnh ngắt sạc (Bypass), không bao giờ bị macOS sạc lố lên 100% lúc ngủ.
+- **Tự động ngắt Bluetooth khi gập máy:** Loại bỏ triệt để hiện tượng chuột bluetooth hoặc AirPods xung quanh vô tình kích hoạt "Dark Wake" khiến máy hoạt động ngầm, nóng rực trong balo và tụt pin qua đêm.
+- **Bật lại Bluetooth tức thì khi mở máy:** Kết nối lại liền mạch không cần thao tác thủ công.
+- **Báo cáo sau giấc ngủ:** Hiển thị thời lượng gập máy và lượng pin tiêu hao (đạt chuẩn **0% hao hụt pin qua đêm**).
+
+#### 3. Giám Sát Năng Lượng & Đóng Băng Tiến Trình (Process Energy & Freeze)
+- **Đặc trị cho MacBook Air không quạt:** Phát hiện ngay các tiến trình ngốn CPU bất thường làm nóng máy (Chrome Renderer, Node, Docker, tiến trình nền bị treo).
+- **Cơ chế Đóng băng (SIGSTOP):** Tạm dừng thực thi tiến trình về 0.0% CPU chỉ với 1 click. Giữ nguyên 100% dữ liệu và các tab trình duyệt trong RAM nhưng triệt tiêu hoàn toàn nhiệt lượng tỏa ra.
+- **Rã đông (SIGCONT):** Tiếp tục hoạt động tức thì ngay khi cần sử dụng tiếp.
+- **Cảnh báo nhiệt độ pin (> 38°C):** Cảnh báo người dùng kê thoáng máy và gợi ý đóng băng ứng dụng nặng để hạ nhiệt tức thì.
+
+#### 4. Hiệu Chuẩn Mạch Pin Định Kỳ (Texas Instruments bq40z651 BMS Calibration)
+- Pin duy trì ở mức 80% trong nhiều tháng liên tục có thể khiến chip quản lý pin BMS bị sai lệch thước đo dung lượng thực.
+- Quy trình tự động 3 bước:
+  1. *Bước 1: Xả pin tự nhiên xuống 20%*.
+  2. *Bước 2: Sạc liên tục lên 100% để cân bằng điện áp các cell (Cell Balancing)*.
+  3. *Bước 3: Ngâm ổn định 15 phút và tự động khóa lại ở 80%* mà người dùng không cần phải canh chừng.
+
+#### 5. Bảng Đo Telemetry & Công Suất Watt Thời Gian Thực
+- **Công suất dòng điện vào/ra pin (Wattage):**
+  - Khi chạy Bypass: `0.0W (Nguồn AC trực tiếp • Pin nghỉ hoàn toàn)`.
+  - Khi đang sạc: `+18.5W (Sạc nhanh)`.
+  - Khi dùng pin: `-4.2W (Xả pin)`.
+- **Thông tin củ sạc:** Nhận diện công suất củ sạc Apple USB-C PD (30W, 35W, 70W...) và số Serial củ sạc.
+- **Độ khỏe cell chuẩn xác:** Tỷ lệ `NominalChargeCapacity / DesignCapacity` (e.g. `99.2% - 4527 / 4563 mAh`).
+- **Chu kỳ sạc & IC:** Hiển thị số chu kỳ (`Cycle Count / 1000`) và chip đo áp chuyên dụng `TI bq40z651`.
+
+---
+
+### 🪟 TRỤC 1: TRẢI NGHIỆM THAO TÁC & ĐIỀU KHIỂN
+
+#### 1. Chia Cửa Sổ & Đa Màn Hình (Thay thế hoàn toàn Rectangle)
 Điều khiển và bố trí cửa sổ cực nhanh bằng bàn phím với độ trễ 0ms thông qua Accessibility API:
 - **`⌥ Option + ⌃ Control + ←`**: Chia cửa sổ sang **Nửa trái màn hình (Left Half)**.
 - **`⌥ Option + ⌃ Control + →`**: Chia cửa sổ sang **Nửa phải màn hình (Right Half)**.
@@ -20,9 +61,7 @@
 - **`⌥ Option + ⌘ Command + →`**: Chuyển cửa sổ hiện tại sang **Màn hình tiếp theo bên phải (Next Display)**.
 - **`⌥ Option + ⌘ Command + ←`**: Chuyển cửa sổ hiện tại sang **Màn hình tiếp theo bên trái (Previous Display)**.
 
----
-
-### 2. 🔄 Chuyển Đổi Cửa Sổ Thông Minh (Thay thế hoàn toàn AltTab)
+#### 2. Chuyển Đổi Cửa Sổ Thông Minh (Thay thế hoàn toàn AltTab)
 Trình chuyển đổi cửa sổ trực quan thay thế thanh Dock mặc định của macOS với giao diện Liquid Glass hiện đại:
 - **Phím tắt chính:** Nhấn giữ **`⌘ Command + Tab`** (hoặc `⌥ Option + Tab`).
 - **Chuẩn MRU (Most Recently Used):** Đang ở App A chuyển sang App B, bấm `⌘ + Tab` nhả ra ngay sẽ **lập tức quay trở lại App A** (tương tự Windows Alt-Tab và AltTab gốc).
@@ -34,31 +73,11 @@ Trình chuyển đổi cửa sổ trực quan thay thế thanh Dock mặc địn
   - Phím **`Q`**: Thoát hẳn ứng dụng (`Quit Application`).
   - Phím **`⎋ Esc`**: Hủy thao tác chuyển đổi.
 
----
-
-### 3. 🛡️ Bảo Vệ Pin & Phần Cứng (Thay thế AlDente Pro)
-Bảo vệ cell pin máy Mac tối đa ở tầng vi điều khiển phần cứng của Apple (SMC):
-- **Khóa sạc ở 80% (AC Bypass Mode):** Ghi trực tiếp vào thanh ghi SMC `CHTE = 01000000`, ngắt sạc hoàn toàn khi pin chạm ngưỡng 80%. Máy chạy điện trực tiếp từ củ sạc, triệt tiêu nguy cơ chai pin và phồng pin do sạc nhồi 100%.
-- **Nút "⚡️ Sạc đầy 100% tạm thời (Top-Up)":** Bật sạc đầy 1 lần khi bạn chuẩn bị đi công tác hoặc ra ngoài.
-- **Bảng đo Telemetry thời gian thực:**
-  - Dung lượng thực tế (`Nominal / Design Capacity mAh`).
-  - Chu kỳ sạc (`Cycle Count`).
-  - Nhiệt độ pin (`°C`), điện áp (`Voltage`), dòng sạc (`Amperage`).
-- **Hệ thống cảnh báo an toàn:**
-  - ⚠️ Cảnh báo cắm màn hình ngoài nhưng chưa cắm sạc (tránh vắt kiệt pin).
-  - 🚨 Cảnh báo pin yếu (< 20% và < 10%) để chống hiện tượng tụt áp sâu (Deep Discharge).
-  - 🌡️ Cảnh báo pin quá nhiệt (> 38°C) để bảo vệ cell pin.
-
----
-
-### 4. 🖥️ Điều Khiển Màn Hình & Độ Sáng (Thay thế BetterDisplay)
+#### 3. Điều Khiển Màn Hình & Độ Sáng (Thay thế BetterDisplay)
 - **Phím tắt `F1 / F2` thông minh:** Tự động nhận diện và tăng/giảm độ sáng màn hình theo vị trí con trỏ chuột (chỉnh được cả màn hình ngoài lẫn màn hình tích hợp của MacBook Air/Pro).
 - **Giao diện OSD Apple:** Hiển thị thanh trượt độ sáng bo cong trong suốt nổi trên màn hình tương ứng.
-- **Soft-Disconnect:** Ngắt màn hình mềm độc lập không làm xáo trộn không gian làm việc.
 
----
-
-### 5. 🖱️ Mouse Chording
+#### 4. Mouse Chording
 - Bấm đồng thời **Chuột Trái + Chuột Phải** $\rightarrow$ Mở ngay `Mission Control (F3)` mà không cần dùng đến bàn phím.
 
 ---
@@ -85,13 +104,22 @@ cd HyperMac
 
 ## 🔐 Cấp Quyền Hệ Thống
 
-Để HyperMac có thể điều khiển phím tắt và chia cửa sổ, bạn chỉ cần cấp quyền 1 lần duy nhất trong **System Settings (Cài đặt hệ thống)**:
-1. **Trợ năng (Accessibility):** *System Settings > Privacy & Security > Accessibility* $\rightarrow$ Bật **HyperMac**. (Dùng cho bắt phím tắt, AltTab và chia cửa sổ).
+Để HyperMac có thể điều khiển phím tắt và chia cửa sổ, bạn chỉ cần cấp quyền trong **System Settings (Cài đặt hệ thống)**:
+1. **Trợ năng (Accessibility):** *System Settings > Privacy & Security > Accessibility* $\rightarrow$ Bật **HyperMac**. (Dùng cho bắt phím tắt F1/F2, AltTab và chia cửa sổ).
 2. **Ghi màn hình (Screen Recording):** *System Settings > Privacy & Security > Screen Recording* $\rightarrow$ Bật **HyperMac**. (Tùy chọn: dùng để hiển thị ảnh chụp nội dung thực tế bên trong thẻ AltTab).
+3. **Quyền điều khiển nguồn SMC:** Bấm nút kích hoạt 1 lần bằng Touch ID / Mật khẩu trên thẻ pin để cài đặt helper `displaycontrol-power`.
 
 ---
 
 ## 📝 Nhật Ký Phiên Bản (Changelog)
+
+### [v1.3.0] — 2026-10-23
+- **Hoàn thiện Trục 2: Bảo vệ Phần cứng & Giữ máy tối đa (Hardware Care & Longevity)**:
+  - **Sleep Guard:** Tự động ngắt Bluetooth khi gập máy chống Dark Wake, khóa cứng lệnh SMC Bypass 80% khi ngủ, tính toán báo cáo thời lượng ngủ và mức hao pin (0% drain).
+  - **Giám sát năng lượng & Đóng băng ứng dụng (Process Energy & Freeze):** Quét các tiến trình nặng ngốn CPU trên chip M2; hỗ trợ "Đóng băng" (`kill -STOP`) hạ CPU về 0% và triệt tiêu nhiệt lượng mà không mất dữ liệu, cùng nút "Rã đông" (`kill -CONT`).
+  - **Hiệu chuẩn pin tự động (Texas Instruments BMS Calibration):** Quy trình 3 bước khôi phục dung lượng chuẩn và cân bằng cell pin định kỳ.
+  - **Bảng đo Telemetry & Wattage:** Tính toán công suất sạc thời gian thực (0.0W ở chế độ Bypass, +Watt khi sạc, -Watt khi dùng pin), đọc thông số củ sạc Apple USB-C và vi mạch Texas Instruments `bq40z651`.
+  - **Giao diện Menu Bar chuẩn Hallmark:** Bổ sung thanh điều hướng 4 phân hệ phần cứng (`Nguồn & Pin`, `Sleep Guard`, `Đóng băng`, `Hiệu chuẩn`).
 
 ### [v1.2.0] — 2026-10-23
 - **Tính năng mới:** Tích hợp bộ chia cửa sổ và đa màn hình thông minh (Thay thế hoàn toàn Rectangle):

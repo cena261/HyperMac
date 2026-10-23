@@ -99,9 +99,9 @@ public class DisplayManager: ObservableObject {
         if self.hasAccessibility != trusted {
             self.hasAccessibility = trusted
             appLog("🔐 Accessibility status changed to: \(trusted)")
-            if trusted {
-                KeyInterceptor.shared.start()
-            }
+        }
+        if trusted && KeyInterceptor.shared.currentTap == nil {
+            KeyInterceptor.shared.start()
         }
     }
 

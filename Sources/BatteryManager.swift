@@ -3,7 +3,7 @@ import IOKit
 import Combine
 import AppKit
 
-// MARK: - Battery Manager
+// MARK: - Battery Manager (Hardware Care & Longevity)
 
 @MainActor
 public class BatteryManager: ObservableObject {
@@ -15,10 +15,12 @@ public class BatteryManager: ObservableObject {
     @Published public var nominalCapacity: Int = 0
     @Published public var designCapacity: Int = 0
     @Published public var healthPercent: Int = 100
+    @Published public var exactHealthPercent: Double = 100.0
     @Published public var cycleCount: Int = 0
     @Published public var temperature: Double = 0.0      // in °C
     @Published public var voltage: Double = 0.0          // in Volts
     @Published public var amperage: Int = 0              // in mA
+    @Published public var wattage: Double = 0.0          // in Watts
     @Published public var isPluggedIn: Bool = false
     @Published public var isCharging: Bool = false
     @Published public var isFullyCharged: Bool = false
@@ -28,6 +30,13 @@ public class BatteryManager: ObservableObject {
     @Published public var isInstallingHelper: Bool = false
     @Published public var statusMessage: String = "Đang kiểm tra..."
     @Published public var lastUpdated: Date = Date()
+
+    // Extended Telemetry
+    @Published public var adapterWatts: Int = 0          // e.g. 30W
+    @Published public var adapterDescription: String = "" // e.g. "pd charger"
+    @Published public var adapterSerial: String = ""
+    @Published public var batterySerial: String = ""
+    @Published public var gasGaugeChip: String = ""
 
     // User Settings (Stored in UserDefaults)
     @Published public var isProtectionEnabled: Bool = true {
@@ -63,6 +72,41 @@ public class BatteryManager: ObservableObject {
         }
     }
 
+    // Hardware Tab Selection (0: Nguồn & Pin, 1: Sleep Guard, 2: Đóng băng CPU, 3: Hiệu chuẩn)
+    @Published public var selectedHardwareTab: Int = 0
+
+    // Sleep Guard Settings & State
+    @Published public var isSleepGuardEnabled: Bool = true {
+        didSet {
+            UserDefaults.standard.set(isSleepGuardEnabled, forKey: "battery_sleep_guard_enabled")
+        }
+    }
+
+    @Published public var sleepGuardTurnOffBluetooth: Bool = true {
+        didSet {
+            UserDefaults.standard.set(sleepGuardTurnOffBluetooth, forKey: "battery_sleep_guard_bt")
+        }
+    }
+
+    @Published public var lastSleepReport: String = ""
+
+    private var sleepDate: Date? = nil
+    private var sleepBatteryLevel: Int = 0
+    private var wasBluetoothTurnedOffBySleepGuard: Bool = false
+
+    // Calibration State Machine
+    public enum CalibrationState: String, CaseIterable {
+        case idle = "idle"
+        case discharging = "discharging"
+        case charging = "charging"
+        case resting = "resting"
+        case completed = "completed"
+    }
+
+    @Published public var calibrationState: CalibrationState = .idle
+    @Published public var calibrationMessage: String = ""
+    private var restingTimer: Timer?
+
     public var tempAlertThreshold: Double = 38.0 // Warning at 38°C
     private var lastTempAlertDate: Date? = nil
     private var lastExtDisplayAlertDate: Date? = nil
@@ -91,6 +135,20 @@ public class BatteryManager: ObservableObject {
             self.isSmartAlertsEnabled = true
         }
 
+        if UserDefaults.standard.object(forKey: "battery_sleep_guard_enabled") != nil {
+            self.isSleepGuardEnabled = UserDefaults.standard.bool(forKey: "battery_sleep_guard_enabled")
+        } else {
+            self.isSleepGuardEnabled = true
+        }
+
+        if UserDefaults.standard.object(forKey: "battery_sleep_guard_bt") != nil {
+            self.sleepGuardTurnOffBluetooth = UserDefaults.standard.bool(forKey: "battery_sleep_guard_bt")
+        } else {
+            self.sleepGuardTurnOffBluetooth = true
+        }
+
+        self.lastSleepReport = UserDefaults.standard.string(forKey: "battery_last_sleep_report") ?? ""
+
         let savedLimit = UserDefaults.standard.integer(forKey: "battery_charge_limit")
         if savedLimit >= 50 && savedLimit <= 100 {
             self.chargeLimit = savedLimit
@@ -99,6 +157,9 @@ public class BatteryManager: ObservableObject {
         }
 
         self.isTopUpActive = UserDefaults.standard.bool(forKey: "battery_top_up_active")
+
+        // Setup Sleep Observers
+        setupSleepObservers()
 
         // Initial check
         checkHelperStatus()
@@ -112,6 +173,82 @@ public class BatteryManager: ObservableObject {
 
     deinit {
         timer?.invalidate()
+        restingTimer?.invalidate()
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
+    }
+
+    // MARK: - Sleep Guard Lifecycle
+
+    private func setupSleepObservers() {
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(handleWillSleep(_:)),
+            name: NSWorkspace.willSleepNotification,
+            object: nil
+        )
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(handleDidWake(_:)),
+            name: NSWorkspace.didWakeNotification,
+            object: nil
+        )
+    }
+
+    @objc private func handleWillSleep(_ notification: Notification) {
+        guard isSleepGuardEnabled else { return }
+        self.sleepDate = Date()
+        self.sleepBatteryLevel = self.currentLevel
+
+        // Turn off Bluetooth if configured to prevent phantom Dark Wake drain
+        if sleepGuardTurnOffBluetooth && BluetoothManager.shared.isAvailable && BluetoothManager.shared.isPowerOn {
+            self.wasBluetoothTurnedOffBySleepGuard = true
+            BluetoothManager.shared.isPowerOn = false
+        }
+
+        // Hard lock SMC CHTE to 1 if at or above limit to prevent waking or sleep-charging overrides
+        if isProtectionEnabled && currentLevel >= chargeLimit && isHelperInstalled {
+            _ = shell("sudo -n /usr/local/bin/displaycontrol-power charge-off")
+        }
+    }
+
+    @objc private func handleDidWake(_ notification: Notification) {
+        guard isSleepGuardEnabled else { return }
+
+        // Restore Bluetooth if previously turned off by Sleep Guard
+        if wasBluetoothTurnedOffBySleepGuard && BluetoothManager.shared.isAvailable {
+            BluetoothManager.shared.isPowerOn = true
+            wasBluetoothTurnedOffBySleepGuard = false
+        }
+
+        // Re-enforce SMC Limit right upon wake
+        evaluatePowerManagement()
+
+        // Calculate sleep duration & battery delta
+        if let sDate = sleepDate {
+            let elapsed = Date().timeIntervalSince(sDate)
+            let hours = Int(elapsed) / 3600
+            let mins = (Int(elapsed) % 3600) / 60
+            let delta = currentLevel - sleepBatteryLevel
+
+            let drainText: String
+            if delta >= 0 {
+                drainText = "Hao pin: 0% (Hoàn hảo)"
+            } else {
+                drainText = "Hao pin: \(abs(delta))% (\(sleepBatteryLevel)% ➔ \(currentLevel)%)"
+            }
+
+            let report = "Gập máy \(hours)h\(mins)m • \(drainText) • SMC khóa an toàn"
+            self.lastSleepReport = report
+            UserDefaults.standard.set(report, forKey: "battery_last_sleep_report")
+
+            if isSmartAlertsEnabled {
+                sendNotification(
+                    title: "🛡️ Sleep Guard: Báo cáo khi mở máy",
+                    body: "Máy đã nghỉ \(hours)h\(mins)m. \(drainText). Chế độ nguồn AC tiếp tục được bảo vệ!"
+                )
+            }
+            self.sleepDate = nil
+        }
     }
 
     // MARK: - Polling Timer
@@ -167,12 +304,30 @@ public class BatteryManager: ObservableObject {
         }
 
         if let rawAmp = dict["Amperage"] as? Int64 {
-            // Signed 64-bit: negative = discharging, positive = charging
+            // Signed 64-bit: negative = discharging, positive = charging, 0 = bypass
             self.amperage = Int(rawAmp)
         }
 
+        // Live Wattage = Voltage (V) * abs(Amperage (A))
+        self.wattage = (self.voltage * Double(abs(self.amperage))) / 1000.0
+
+        // Parse Adapter details
+        if let adapter = dict["AdapterDetails"] as? [String: Any] {
+            self.adapterWatts = adapter["Watts"] as? Int ?? self.adapterWatts
+            self.adapterDescription = adapter["Description"] as? String ?? self.adapterDescription
+            self.adapterSerial = adapter["SerialString"] as? String ?? self.adapterSerial
+        } else if let adapterList = dict["AppleRawAdapterDetails"] as? [[String: Any]], let first = adapterList.first {
+            self.adapterWatts = first["Watts"] as? Int ?? self.adapterWatts
+            self.adapterDescription = first["Description"] as? String ?? self.adapterDescription
+            self.adapterSerial = first["SerialString"] as? String ?? self.adapterSerial
+        }
+
+        self.batterySerial = dict["Serial"] as? String ?? self.batterySerial
+        self.gasGaugeChip = dict["DeviceName"] as? String ?? self.gasGaugeChip
+
         if self.designCapacity > 0 && self.nominalCapacity > 0 {
             let ratio = Double(self.nominalCapacity) / Double(self.designCapacity) * 100.0
+            self.exactHealthPercent = ratio
             self.healthPercent = min(100, Int(round(ratio)))
         }
 
@@ -254,7 +409,7 @@ public class BatteryManager: ObservableObject {
         let tempStr = String(format: "%.1f°C", temperature)
         sendNotification(
             title: "⚠️ Cảnh báo nhiệt độ pin (\(tempStr))",
-            body: "Nhiệt độ pin MacBook đã lên tới \(tempStr)! Hãy kê thoáng máy hoặc giảm tải tác vụ nặng để bảo vệ tuổi thọ cell pin."
+            body: "Nhiệt độ pin MacBook đã lên tới \(tempStr)! Hãy kê thoáng máy hoặc mở phần Giám sát năng lượng để đóng băng các tác vụ nặng."
         )
     }
 
@@ -289,6 +444,54 @@ public class BatteryManager: ObservableObject {
             return
         }
 
+        // 1. Calibration State handling
+        if calibrationState != .idle {
+            switch calibrationState {
+            case .discharging:
+                if currentLevel <= 20 {
+                    calibrationState = .charging
+                    calibrationMessage = "Bước 2/3: Sạc đầy 100% để cân bằng cell (Hiện tại: \(currentLevel)%)"
+                    setChargingInhibited(false)
+                    sendNotification(
+                        title: "⚡️ Hiệu chuẩn pin: Đạt 20%",
+                        body: "Bắt đầu sạc liên tục lên 100% để cân bằng điện áp các cell pin."
+                    )
+                } else {
+                    setChargingInhibited(true)
+                    calibrationMessage = "Bước 1/3: Xả pin xuống 20% (Hiện tại: \(currentLevel)%)"
+                }
+                return
+
+            case .charging:
+                if currentLevel >= 100 {
+                    calibrationState = .resting
+                    calibrationMessage = "Bước 3/3: Giữ 100% trong 15 phút để ổn định hóa chất cell..."
+                    setChargingInhibited(false)
+                    sendNotification(
+                        title: "🔋 Hiệu chuẩn pin: Đạt 100%",
+                        body: "Đang giữ 100% trong 15 phút để các cell pin cân bằng hoàn toàn."
+                    )
+                    restingTimer?.invalidate()
+                    restingTimer = Timer.scheduledTimer(withTimeInterval: 900, repeats: false) { [weak self] _ in
+                        Task { @MainActor [weak self] in
+                            self?.completeCalibration()
+                        }
+                    }
+                } else {
+                    setChargingInhibited(false)
+                    calibrationMessage = "Bước 2/3: Đang sạc lên 100% (Hiện tại: \(currentLevel)%)"
+                }
+                return
+
+            case .resting:
+                return
+
+            case .completed, .idle:
+                break
+            }
+        }
+
+        // 2. Normal power state
         if !isPluggedIn {
             statusMessage = "Đang dùng pin (\(currentLevel)%)"
             return
@@ -337,6 +540,47 @@ public class BatteryManager: ObservableObject {
                 if code == 0 {
                     self.isBypassActive = inhibit
                 }
+            }
+        }
+    }
+
+    // MARK: - Battery Calibration API
+
+    public func startCalibration() {
+        guard isHelperInstalled else {
+            statusMessage = "Cần cấp quyền SMC để hiệu chuẩn pin"
+            return
+        }
+        calibrationState = .discharging
+        calibrationMessage = "Bước 1/3: Xả pin xuống 20% (Hiện tại: \(currentLevel)%)"
+        setChargingInhibited(true)
+        sendNotification(
+            title: "🔬 Bắt đầu hiệu chuẩn pin (BMS Calibration)",
+            body: "Bước 1: Máy đang xả pin xuống 20%. Bạn có thể tiếp tục sử dụng máy bình thường."
+        )
+    }
+
+    public func cancelCalibration() {
+        calibrationState = .idle
+        calibrationMessage = ""
+        restingTimer?.invalidate()
+        restingTimer = nil
+        evaluatePowerManagement()
+    }
+
+    private func completeCalibration() {
+        calibrationState = .completed
+        calibrationMessage = "🎉 Hiệu chuẩn hoàn tất! Đã tự động khóa lại ở \(chargeLimit)%"
+        setChargingInhibited(true)
+        sendNotification(
+            title: "🎉 Hiệu chuẩn pin thành công!",
+            body: "Dung lượng cell đã được cân bằng chính xác. Chế độ nguồn AC trực tiếp đã được tự động khóa lại ở \(chargeLimit)%."
+        )
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self] in
+            if self?.calibrationState == .completed {
+                self?.calibrationState = .idle
+                self?.calibrationMessage = ""
+                self?.evaluatePowerManagement()
             }
         }
     }
