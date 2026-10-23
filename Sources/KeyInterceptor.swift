@@ -18,6 +18,7 @@ private var rightDownTime: TimeInterval = 0
 public var gIsMouseChordEnabled: Bool = true
 public var gIsAltTabEnabled: Bool = true
 public var gIsAltTabVisible: Bool = false
+public var gIsClipboardHUDVisible: Bool = false
 private var gActiveModifierMask: CGEventFlags? = nil
 private var gCurrentTap: CFMachPort? = nil
 
@@ -232,6 +233,26 @@ private func eventTapCallback(
                 _ = DisplayManager.shared.handleBrightnessKey(isUp: isUp)
             }
             return nil
+        }
+
+        // Command + Shift + C (or Cmd + Shift + V) -> Toggle Clipboard Manager HUD (Maccy Replacement)
+        let isCmdShift = flags.contains(.maskCommand) && flags.contains(.maskShift) && !flags.contains(.maskControl)
+        if isCmdShift && (keycode == 8 || keycode == 9) {
+            DispatchQueue.main.async {
+                ClipboardManager.shared.toggleHUD()
+            }
+            return nil
+        }
+
+        // Clipboard HUD Active Keys
+        if gIsClipboardHUDVisible {
+            if keycode == 53 { // Esc -> Close HUD
+                gIsClipboardHUDVisible = false
+                DispatchQueue.main.async {
+                    ClipboardManager.shared.hideHUD()
+                }
+                return nil
+            }
         }
 
         // Option + Control + Arrow keys -> Window Snapping (Rectangle-style)

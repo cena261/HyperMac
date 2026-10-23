@@ -41,8 +41,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             button.target = self
         }
 
-        // Start Global F1/F2 Key Interceptor
+        // Start Global Key Interceptor (F1/F2, AltTab, Snapping, Clipboard)
         KeyInterceptor.shared.start()
+
+        // Eagerly initialize Clipboard Manager
+        _ = ClipboardManager.shared
 
         // Register for display reconfiguration
         CGDisplayRegisterReconfigurationCallback(displayReconfigCallback, nil)

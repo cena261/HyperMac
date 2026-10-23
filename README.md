@@ -1,11 +1,11 @@
 # HyperMac — The Ultimate macOS All-in-One Power Utility Suite
 
-[![Version](https://img.shields.io/badge/version-v1.3.3-blue.svg)](https://github.com/khacdai24/HyperMac)
+[![Version](https://img.shields.io/badge/version-v1.4.0-blue.svg)](https://github.com/khacdai24/HyperMac)
 [![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-black.svg)](https://github.com/khacdai24/HyperMac)
 [![Architecture](https://img.shields.io/badge/architecture-Apple%20Silicon%20(ARM64)-brightgreen.svg)](https://github.com/khacdai24/HyperMac)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
 
-**HyperMac** là bộ siêu công cụ tất-cả-trong-một (All-in-One Super Suite) viết bằng **Swift thuần** dành riêng cho macOS Apple Silicon. Ứng dụng siêu nhẹ, mượt mà, khởi động tức thì và **hoàn toàn miễn phí**, thay thế trọn bộ 4 ứng dụng nặng nề riêng lẻ: **Rectangle**, **AltTab**, **AlDente Pro**, và **BetterDisplay**.
+**HyperMac** là bộ siêu công cụ tất-cả-trong-một (All-in-One Super Suite) viết bằng **Swift thuần** dành riêng cho macOS Apple Silicon. Ứng dụng siêu nhẹ, mượt mà, khởi động tức thì và **hoàn toàn miễn phí**, thay thế trọn bộ 5 ứng dụng nặng nề riêng lẻ: **Rectangle**, **AltTab**, **Maccy**, **AlDente Pro**, và **BetterDisplay**.
 
 ---
 
@@ -75,11 +75,30 @@ Trình chuyển đổi cửa sổ trực quan thay thế thanh Dock mặc địn
   - Phím **`Q`**: Thoát hẳn ứng dụng (`Quit Application`).
   - Phím **`⎋ Esc`**: Hủy thao tác chuyển đổi.
 
-#### 3. Điều Khiển Màn Hình & Độ Sáng (Thay thế BetterDisplay)
+#### 3. Quản Lý Clipboard Thông Minh (Thay thế hoàn toàn Maccy)
+Trình quản lý lịch sử sao chép với giao diện nổi Liquid Glass, tìm kiếm mờ tức thì và dán nhanh bằng bàn phím:
+- **Phím tắt gọi nhanh:** Nhấn **`⌘ Command + ⇧ Shift + C`** (hoặc `⌘ + ⇧ + V`) để mở ngay bảng Clipboard nổi tại vị trí con trỏ chuột hoặc giữa màn hình.
+- **Phím số `1..9` dán tức thì:** Bấm phím số từ 1 đến 9 để tự động dán ngay mục tương ứng vào ứng dụng bạn đang soạn thảo mà không cần click chuột.
+- **Tìm kiếm mờ (Fuzzy Instant Search):** Gõ trực tiếp để lọc nhanh văn bản, liên kết, mã màu hoặc tên ứng dụng nguồn.
+- **Nhận diện đa phương tiện thông minh:**
+  - *Văn bản thuần & Định dạng (Plain Text & RTF).*
+  - *Hình ảnh:* Tự tạo ảnh thu nhỏ (thumbnail) sắc nét kèm kích thước pixel.
+  - *Liên kết web (URLs):* Nhận diện tên miền và biểu tượng web.
+  - *Mã màu Hex/RGB:* Tự động render ô màu thực tế (color swatch) với mã màu (ví dụ `#3B82F6`).
+  - *Tệp tin & Thư mục:* Nhận diện đường dẫn file kèm icon hệ thống macOS.
+- **Phím tắt điều hướng nhanh:**
+  - Phím **`1..9`**: Dán nhanh mục 1 tới 9.
+  - Phím **`↵ Enter`**: Dán mục đang chọn.
+  - Phím **`⌥ Option + P`**: Ghim / Bỏ ghim mục yêu thích lên đầu danh sách.
+  - Phím **`⌥ Option + ⌫ Delete`**: Xóa nhanh mục đang chọn.
+  - Phím **`⎋ Esc`**: Đóng bảng Clipboard.
+- **Bảo mật tuyệt đối:** Tự động phát hiện và bỏ qua mật khẩu hoặc dữ liệu nhạy cảm được sao chép từ 1Password, Bitwarden, KeePass, Apple Keychain.
+
+#### 4. Điều Khiển Màn Hình & Độ Sáng (Thay thế BetterDisplay)
 - **Phím tắt `F1 / F2` thông minh:** Tự động nhận diện và tăng/giảm độ sáng màn hình theo vị trí con trỏ chuột (chỉnh được cả màn hình ngoài lẫn màn hình tích hợp của MacBook Air/Pro).
 - **Giao diện OSD Apple:** Hiển thị thanh trượt độ sáng bo cong trong suốt nổi trên màn hình tương ứng.
 
-#### 4. Mouse Chording
+#### 5. Mouse Chording
 - Bấm đồng thời **Chuột Trái + Chuột Phải** $\rightarrow$ Mở ngay `Mission Control (F3)` mà không cần dùng đến bàn phím.
 
 ---
@@ -114,6 +133,16 @@ cd HyperMac
 ---
 
 ## 📝 Nhật Ký Phiên Bản (Changelog)
+
+### [v1.4.0] — 2026-10-23
+- **Tính năng mới: Tích hợp Trình Quản Lý Clipboard Thông Minh (Thay thế hoàn toàn Maccy):**
+  - **Gỡ bỏ hoàn toàn Maccy:** Xóa sạch sẽ ứng dụng `Maccy.app`, dữ liệu Container và preferences cũ.
+  - **Phím tắt toàn cầu `⌘ Command + ⇧ Shift + C` (và `⌘⇧V`):** Mở bảng Clipboard nổi Liquid Glass cực nhanh tại vị trí con trỏ chuột.
+  - **Dán siêu tốc với phím số `1..9`:** Bấm số 1 đến 9 để tự động dán ngay mục vào ứng dụng đích mà không cần nhấp chuột.
+  - **Nhận diện đa phương tiện:** Hỗ trợ văn bản, định dạng RTF, ảnh thumbnail, liên kết URL, danh sách tệp tin và xem trước mã màu Hex/RGB.
+  - **Thao tác nhanh:** `⌥P` ghim lên đầu, `⌥⌫` xóa mục, `↵` dán, tìm kiếm mờ instant search, phân loại thẻ lọc linh hoạt.
+  - **Bảo mật:** Tự động nhận diện và bỏ qua dữ liệu từ các trình quản lý mật khẩu (1Password, Bitwarden, Keychain).
+  - **Bảng điều khiển Menu Bar:** Tích hợp tùy chỉnh giới hạn lưu trữ (50/100/200 mục), nút mở HUD và xóa lịch sử.
 
 ### [v1.3.3] — 2026-10-23
 - **Tối Ưu Hóa Quy Trình Hiệu Chuẩn Pin (Natural Cycle & Auto Balancing):**

@@ -8,6 +8,7 @@ public struct MainView: View {
     @ObservedObject var batteryManager: BatteryManager = BatteryManager.shared
     @ObservedObject var snapManager: WindowSnapManager = WindowSnapManager.shared
     @ObservedObject var windowManager: WindowManager = WindowManager.shared
+    @ObservedObject var clipboardManager: ClipboardManager = ClipboardManager.shared
 
     public init(displayManager: DisplayManager) {
         self.displayManager = displayManager
@@ -37,7 +38,8 @@ public struct MainView: View {
                     ShortcutsTabView(
                         displayManager: displayManager,
                         snapManager: snapManager,
-                        windowManager: windowManager
+                        windowManager: windowManager,
+                        clipboardManager: clipboardManager
                     )
                 default:
                     DisplaysTabView(displayManager: displayManager)
@@ -81,7 +83,7 @@ struct ModernHeaderBar: View {
                     .font(.system(size: 13, weight: .heavy, design: .rounded))
                     .foregroundStyle(.primary)
 
-                Text("v1.3.3")
+                Text("v1.4.0")
                     .font(.system(size: 8.5, weight: .bold))
                     .padding(.horizontal, 4)
                     .padding(.vertical, 1.5)
@@ -271,6 +273,7 @@ struct ShortcutsTabView: View {
     @ObservedObject var displayManager: DisplayManager
     @ObservedObject var snapManager: WindowSnapManager
     @ObservedObject var windowManager: WindowManager
+    @ObservedObject var clipboardManager: ClipboardManager
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -400,6 +403,111 @@ struct ShortcutsTabView: View {
                                 Spacer()
                             }
                         }
+                    }
+                }
+                .padding(10)
+                .background(RoundedRectangle(cornerRadius: 10).fill(Color(nsColor: .controlBackgroundColor)))
+
+                // Clipboard Manager (Maccy Replacement) Card
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "doc.on.clipboard.fill")
+                            .font(.system(size: 12))
+                            .foregroundStyle(Color.accentColor)
+
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("Quản lý Clipboard (Thay thế Maccy)")
+                                .font(.system(size: 10.5, weight: .bold))
+                            Text("Lịch sử sao chép thông minh, tìm kiếm & dán tức thì")
+                                .font(.system(size: 8))
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+
+                        Toggle("", isOn: Binding<Bool>(
+                            get: { clipboardManager.isMonitoringEnabled },
+                            set: { clipboardManager.isMonitoringEnabled = $0 }
+                        ))
+                        .toggleStyle(.switch)
+                        .controlSize(.mini)
+                        .labelsHidden()
+                    }
+
+                    if clipboardManager.isMonitoringEnabled {
+                        // Shortcuts & Quick Actions
+                        HStack(spacing: 6) {
+                            shortcutPill(key: "⌘⇧C", desc: "Mở bảng HUD")
+                            shortcutPill(key: "1..9", desc: "Dán tức thì")
+                            shortcutPill(key: "⌥P", desc: "Ghim")
+                            shortcutPill(key: "⌥⌫", desc: "Xóa")
+                        }
+
+                        // Options row
+                        HStack {
+                            Text("Giới hạn:")
+                                .font(.system(size: 8))
+                                .foregroundStyle(.secondary)
+
+                            ForEach([50, 100, 200], id: \.self) { count in
+                                Button {
+                                    clipboardManager.maxItemsCount = count
+                                } label: {
+                                    Text("\(count) mục")
+                                        .font(.system(size: 7.5, weight: clipboardManager.maxItemsCount == count ? .bold : .medium))
+                                        .padding(.horizontal, 5)
+                                        .padding(.vertical, 2)
+                                        .background(
+                                            Capsule().fill(clipboardManager.maxItemsCount == count ? Color.accentColor : Color.primary.opacity(0.06))
+                                        )
+                                        .foregroundStyle(clipboardManager.maxItemsCount == count ? Color.white : Color.primary)
+                                }
+                                .buttonStyle(.plain)
+                            }
+
+                            Spacer()
+
+                            Text("\(clipboardManager.items.count) mục lưu")
+                                .font(.system(size: 8))
+                                .foregroundStyle(.secondary)
+                        }
+
+                        // Ignore passwords toggle
+                        HStack(spacing: 6) {
+                            Image(systemName: "lock.shield")
+                                .font(.system(size: 8.5))
+                                .foregroundStyle(.green)
+                            Text("Tự động bỏ qua mật khẩu (1Password, Bitwarden, Keychain)")
+                                .font(.system(size: 8))
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Toggle("", isOn: Binding<Bool>(
+                                get: { clipboardManager.ignoreConcealedTypes },
+                                set: { clipboardManager.ignoreConcealedTypes = $0 }
+                            ))
+                            .toggleStyle(.switch)
+                            .controlSize(.mini)
+                            .labelsHidden()
+                        }
+
+                        // Open HUD Button
+                        Button {
+                            clipboardManager.toggleHUD()
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "macwindow")
+                                    .font(.system(size: 8.5))
+                                Text("Mở bảng Clipboard HUD (⌘ + ⇧ + C)")
+                                    .font(.system(size: 8.5, weight: .semibold))
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.accentColor.opacity(0.12))
+                            .foregroundStyle(Color.accentColor)
+                            .cornerRadius(5)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding(10)
