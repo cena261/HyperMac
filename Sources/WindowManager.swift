@@ -303,11 +303,10 @@ public class WindowManager: ObservableObject {
     }
 
     public func previewSelectedWindow() {
-        guard selectedIndex >= 0 && selectedIndex < windows.count else { return }
-        let target = windows[selectedIndex]
-        if !target.isMinimized {
-            AXUIElementPerformAction(target.axElement, kAXRaiseAction as CFString)
-        }
+        // Intentionally no-op:
+        // We do NOT raise windows to the top while the user is simply cycling through the HUD.
+        // This ensures the current window layout on screen remains completely undisturbed
+        // until the user actually releases the shortcut to commit their selection.
     }
 
     // MARK: - Commit Selection (Update MRU stack & Activate Target Window)

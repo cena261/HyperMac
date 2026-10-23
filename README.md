@@ -1,6 +1,6 @@
 # HyperMac — The Ultimate macOS All-in-One Power Utility Suite
 
-[![Version](https://img.shields.io/badge/version-v1.4.1-blue.svg)](https://github.com/khacdai24/HyperMac)
+[![Version](https://img.shields.io/badge/version-v1.4.2-blue.svg)](https://github.com/khacdai24/HyperMac)
 [![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-black.svg)](https://github.com/khacdai24/HyperMac)
 [![Architecture](https://img.shields.io/badge/architecture-Apple%20Silicon%20(ARM64)-brightgreen.svg)](https://github.com/khacdai24/HyperMac)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
@@ -133,6 +133,12 @@ cd HyperMac
 ---
 
 ## 📝 Nhật Ký Phiên Bản (Changelog)
+
+### [v1.4.2] — 2026-10-23
+- **Tối Ưu Trải Nghiệm AltTab (Zero Window Shuffling When Cycling):**
+  - **Giữ nguyên vẹn 100% bố cục cửa sổ nền khi lướt Tab:** Loại bỏ hành vi tự động nâng cửa sổ (`kAXRaiseAction`) trong lúc người dùng đang bấm phím `Tab` duyệt danh sách.
+  - **Không làm xáo trộn các cửa sổ đang mở:** Bạn có thể thoải mái lướt qua các ứng dụng trung gian mà không sợ chúng tự động nhảy lên đè mất cửa sổ đang xem (ví dụ: Chrome không bị Antigravity đè lên khi bạn đang lướt tới Finder để chuyển tệp).
+  - **Kích hoạt chính xác khi xác nhận:** Chỉ khi người dùng thực sự thả tay khỏi phím `⌘ Command` (hoặc nhấp chuột) thì cửa sổ được chọn mới được kích hoạt và đưa lên trên cùng.
 
 ### [v1.4.1] — 2026-10-23
 - **Tối Ưu AltTab & Clipboard Manager Đa Không Gian (Multi-Desktop Spaces Support):**
