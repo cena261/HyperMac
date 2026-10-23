@@ -136,8 +136,15 @@ public class DisplayManager: ObservableObject {
         for i in 0..<Int(count) {
             let id = displayIDs[i]
             let isBuiltIn = CGDisplayIsBuiltin(id) != 0
-            let name = getDisplayName(for: id, isBuiltIn: isBuiltIn)
+            let isOnline = (CGDisplayIsOnline(id) != 0)
             let bounds = CGDisplayBounds(id)
+
+            // Filter out offline phantom/unplugged display descriptors (e.g. 1x1 offline ports)
+            if !isBuiltIn && (!isOnline || (bounds.width <= 10 && bounds.height <= 10)) {
+                continue
+            }
+
+            let name = getDisplayName(for: id, isBuiltIn: isBuiltIn)
             let resolution = "\(Int(bounds.width)) × \(Int(bounds.height))"
             let isActive = (CGDisplayIsActive(id) != 0)
 
@@ -363,6 +370,13 @@ public class DisplayManager: ObservableObject {
         let targetID = monitor.id
         let shouldEnable = !currentlyActive
 
+        if shouldEnable && !monitor.isBuiltIn && CGDisplayIsOnline(targetID) == 0 {
+            alertMessage = "Màn hình ngoài hiện không có tín hiệu cáp kết nối vật lý với máy."
+            showAlert = true
+            refreshDisplays()
+            return
+        }
+
         appLog("⚡️ toggleConnection: target='\(monitor.name)' (id=\(targetID)) -> willEnable=\(shouldEnable)")
 
         var config: CGDisplayConfigRef?
@@ -383,8 +397,14 @@ public class DisplayManager: ObservableObject {
 
         let commitResult = CGCompleteDisplayConfiguration(config, .permanently)
         guard commitResult == .success else {
-            alertMessage = "Lỗi áp dụng cấu hình màn hình vào WindowServer (Mã lỗi: \(commitResult.rawValue))."
+            CGRestorePermanentDisplayConfiguration()
+            if shouldEnable {
+                alertMessage = "Không thể bật màn hình ngoài do thiếu tín hiệu cáp hoặc nguồn điện. Vui lòng kiểm tra lại kết nối vật lý."
+            } else {
+                alertMessage = "Lỗi áp dụng cấu hình màn hình vào WindowServer (Mã lỗi: \(commitResult.rawValue))."
+            }
             showAlert = true
+            refreshDisplays()
             return
         }
 

@@ -1,6 +1,6 @@
 # HyperMac — The Ultimate macOS All-in-One Power Utility Suite
 
-[![Version](https://img.shields.io/badge/version-v1.4.2-blue.svg)](https://github.com/khacdai24/HyperMac)
+[![Version](https://img.shields.io/badge/version-v1.4.3-blue.svg)](https://github.com/khacdai24/HyperMac)
 [![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-black.svg)](https://github.com/khacdai24/HyperMac)
 [![Architecture](https://img.shields.io/badge/architecture-Apple%20Silicon%20(ARM64)-brightgreen.svg)](https://github.com/khacdai24/HyperMac)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
@@ -133,6 +133,17 @@ cd HyperMac
 ---
 
 ## 📝 Nhật Ký Phiên Bản (Changelog)
+
+### [v1.4.3] — 2026-10-23
+- **Tính năng mới: Chống Sleep Màn Hình Cấp Thấp (Native Caffeinate):**
+  - **Thay thế hoàn toàn lệnh `caffeinate -d` trong Terminal:** Tích hợp trực tiếp Apple IOKit Power Management (`IOPMAssertionCreateWithName` với assertion type `kIOPMAssertionTypePreventUserIdleDisplaySleep`), hoạt động thuần 100% trong tiến trình HyperMac, không cần mở Terminal và không tốn thêm tiến trình con ngầm.
+  - **Các mốc thời lượng linh hoạt (Preset Durations):** Chọn nhanh `Vô hạn` (Indefinite), `15m`, `30m`, `1h`, hoặc `2h`.
+  - **Đồng hồ đếm ngược trực quan:** Hiển thị thời gian còn lại theo thời gian thực trên thanh tiêu đề Menu Bar (huy hiệu cà phê phát sáng màu cam) và thẻ điều khiển Caffeinate.
+  - **Tự động gửi thông báo:** Khi hết giờ hẹn, hệ thống tự động gửi thông báo macOS thông báo màn hình đã trở về cơ chế ngủ tiết kiệm năng lượng bình thường.
+  - **Giải phóng an toàn:** Tự động giải phóng Power Assertion khi tắt tính năng hoặc khi đóng ứng dụng HyperMac.
+- **Sửa lỗi triệt để: Lỗi áp dụng cấu hình màn hình vào WindowServer (Mã lỗi: 1001):**
+  - **Nguyên nhân:** Do WindowServer lưu vết cổng hiển thị ngoại vi đã ngắt kết nối (offline phantom display ID $1 \times 1$) khi máy không cắm dây cáp màn hình ngoài. Khi bấm "Bật lại", lệnh áp dụng cấu hình đồ họa bị từ chối với mã lỗi `1001` (`kCGErrorIllegalArgument`).
+  - **Khắc phục:** Tự động lọc sạch các cổng hiển thị offline / không có tín hiệu vật lý. Bổ sung cơ chế dự phòng `CGRestorePermanentDisplayConfiguration` và hiển thị thông báo hướng dẫn cắm cáp kết nối vật lý thân thiện thay vì ném lỗi mã số hệ thống khó hiểu.
 
 ### [v1.4.2] — 2026-10-23
 - **Tối Ưu Trải Nghiệm AltTab (Zero Window Shuffling When Cycling):**

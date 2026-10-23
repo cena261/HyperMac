@@ -13,6 +13,9 @@ public func CGCompleteDisplayConfiguration(_ config: CGDisplayConfigRef?, _ opti
 @_silgen_name("CGCancelDisplayConfiguration")
 public func CGCancelDisplayConfiguration(_ config: CGDisplayConfigRef?) -> CGError
 
+@_silgen_name("CGRestorePermanentDisplayConfiguration")
+public func CGRestorePermanentDisplayConfiguration()
+
 // MARK: - Dynamic SkyLight Private Framework Bindings
 
 public typealias SLSConfigureDisplayEnabledFunc = @convention(c) (CGDisplayConfigRef?, CGDirectDisplayID, Bool) -> CGError

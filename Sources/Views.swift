@@ -9,6 +9,7 @@ public struct MainView: View {
     @ObservedObject var snapManager: WindowSnapManager = WindowSnapManager.shared
     @ObservedObject var windowManager: WindowManager = WindowManager.shared
     @ObservedObject var clipboardManager: ClipboardManager = ClipboardManager.shared
+    @ObservedObject var caffeinateManager: CaffeinateManager = CaffeinateManager.shared
 
     public init(displayManager: DisplayManager) {
         self.displayManager = displayManager
@@ -17,7 +18,7 @@ public struct MainView: View {
     public var body: some View {
         VStack(spacing: 0) {
             // Modern Sleek Header Bar
-            ModernHeaderBar(batteryManager: batteryManager)
+            ModernHeaderBar(batteryManager: batteryManager, caffeinateManager: caffeinateManager)
 
             // Top Tab Navigation Bar
             TopTabBar(selectedTab: Binding<Int>(
@@ -31,7 +32,7 @@ public struct MainView: View {
             Group {
                 switch displayManager.selectedMainTab {
                 case 0:
-                    DisplaysTabView(displayManager: displayManager)
+                    DisplaysTabView(displayManager: displayManager, caffeinateManager: caffeinateManager)
                 case 1:
                     HardwareCareTabView(batteryManager: batteryManager)
                 case 2:
@@ -42,7 +43,7 @@ public struct MainView: View {
                         clipboardManager: clipboardManager
                     )
                 default:
-                    DisplaysTabView(displayManager: displayManager)
+                    DisplaysTabView(displayManager: displayManager, caffeinateManager: caffeinateManager)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -70,6 +71,7 @@ public struct MainView: View {
 
 struct ModernHeaderBar: View {
     @ObservedObject var batteryManager: BatteryManager
+    @ObservedObject var caffeinateManager: CaffeinateManager
 
     var body: some View {
         HStack(spacing: 8) {
@@ -83,7 +85,7 @@ struct ModernHeaderBar: View {
                     .font(.system(size: 13, weight: .heavy, design: .rounded))
                     .foregroundStyle(.primary)
 
-                Text("v1.4.2")
+                Text("v1.4.3")
                     .font(.system(size: 8.5, weight: .bold))
                     .padding(.horizontal, 4)
                     .padding(.vertical, 1.5)
@@ -92,6 +94,21 @@ struct ModernHeaderBar: View {
             }
 
             Spacer()
+
+            // Keep-awake Active Indicator
+            if caffeinateManager.isActive {
+                HStack(spacing: 3) {
+                    Image(systemName: "cup.and.saucer.fill")
+                        .font(.system(size: 8.5))
+                    Text(caffeinateManager.remainingFormatted)
+                        .font(.system(size: 8.5, weight: .semibold, design: .monospaced))
+                }
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2.5)
+                .background(Capsule().fill(Color.orange.opacity(0.18)))
+                .foregroundStyle(Color.orange)
+                .help("Chống sleep màn hình đang bật (\(caffeinateManager.remainingFormatted))")
+            }
 
             // Live Status Chip
             HStack(spacing: 4) {
@@ -209,9 +226,15 @@ struct HardwareCareTabView: View {
 
 struct DisplaysTabView: View {
     @ObservedObject var displayManager: DisplayManager
+    @ObservedObject var caffeinateManager: CaffeinateManager
 
     var body: some View {
         VStack(spacing: 8) {
+            // Caffeinate (Anti-Sleep) Control Card
+            CaffeinateCardView(caffeinateManager: caffeinateManager)
+                .padding(.horizontal, 12)
+                .padding(.top, 6)
+
             // F1/F2 cursor-based brightness setting
             HStack(spacing: 8) {
                 Image(systemName: "keyboard")
@@ -240,7 +263,6 @@ struct DisplaysTabView: View {
             .padding(.vertical, 7)
             .background(RoundedRectangle(cornerRadius: 8).fill(Color.primary.opacity(0.04)))
             .padding(.horizontal, 12)
-            .padding(.top, 6)
 
             // Display List
             ScrollView(.vertical, showsIndicators: false) {
@@ -264,6 +286,100 @@ struct DisplaysTabView: View {
             // Quick Actions Bar (Soft disconnect)
             QuickActionsBar(displayManager: displayManager)
         }
+    }
+}
+
+// MARK: - Caffeinate (Anti-Sleep) Card View
+
+struct CaffeinateCardView: View {
+    @ObservedObject var caffeinateManager: CaffeinateManager
+
+    var body: some View {
+        VStack(spacing: 8) {
+            // Main Row: Icon, Title, Badge, and Switch
+            HStack(spacing: 8) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 7)
+                        .fill(caffeinateManager.isActive ? Color.orange.opacity(0.2) : Color.primary.opacity(0.06))
+                        .frame(width: 28, height: 28)
+
+                    Image(systemName: "cup.and.saucer.fill")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(caffeinateManager.isActive ? Color.orange : Color.secondary)
+                }
+
+                VStack(alignment: .leading, spacing: 1.5) {
+                    HStack(spacing: 6) {
+                        Text("Chống sleep màn (Caffeinate)")
+                            .font(.system(size: 11, weight: .semibold))
+
+                        if caffeinateManager.isActive {
+                            HStack(spacing: 3) {
+                                Circle()
+                                    .fill(Color.orange)
+                                    .frame(width: 5, height: 5)
+                                Text(caffeinateManager.remainingFormatted)
+                                    .font(.system(size: 8.5, weight: .bold, design: .monospaced))
+                            }
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1.5)
+                            .background(Capsule().fill(Color.orange.opacity(0.18)))
+                            .foregroundStyle(Color.orange)
+                        }
+                    }
+
+                    Text("Giữ màn hình luôn sáng như 'caffeinate -d' trong Terminal")
+                        .font(.system(size: 8))
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                Toggle("", isOn: Binding<Bool>(
+                    get: { caffeinateManager.isActive },
+                    set: { _ in caffeinateManager.toggle() }
+                ))
+                .toggleStyle(.switch)
+                .controlSize(.mini)
+                .labelsHidden()
+            }
+
+            // Duration Selection Pills
+            HStack(spacing: 6) {
+                ForEach(CaffeinateDuration.allCases) { duration in
+                    Button {
+                        caffeinateManager.setDuration(duration)
+                    } label: {
+                        Text(duration.title)
+                            .font(.system(size: 9, weight: caffeinateManager.selectedDuration == duration ? .bold : .medium))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3.5)
+                            .frame(maxWidth: .infinity)
+                            .background(
+                                RoundedRectangle(cornerRadius: 5)
+                                    .fill(caffeinateManager.selectedDuration == duration
+                                          ? (caffeinateManager.isActive ? Color.orange : Color.accentColor)
+                                          : Color.primary.opacity(0.05))
+                            )
+                            .foregroundStyle(
+                                caffeinateManager.selectedDuration == duration
+                                ? Color.white
+                                : Color.primary
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(caffeinateManager.isActive ? Color.orange.opacity(0.06) : Color.primary.opacity(0.035))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(caffeinateManager.isActive ? Color.orange.opacity(0.3) : Color.clear, lineWidth: 1)
+                )
+        )
     }
 }
 
