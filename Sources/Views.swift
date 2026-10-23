@@ -30,9 +30,9 @@ public struct MainView: View {
             Group {
                 switch displayManager.selectedMainTab {
                 case 0:
-                    HardwareCareTabView(batteryManager: batteryManager)
-                case 1:
                     DisplaysTabView(displayManager: displayManager)
+                case 1:
+                    HardwareCareTabView(batteryManager: batteryManager)
                 case 2:
                     ShortcutsTabView(
                         displayManager: displayManager,
@@ -40,7 +40,7 @@ public struct MainView: View {
                         windowManager: windowManager
                     )
                 default:
-                    HardwareCareTabView(batteryManager: batteryManager)
+                    DisplaysTabView(displayManager: displayManager)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -81,7 +81,7 @@ struct ModernHeaderBar: View {
                     .font(.system(size: 13, weight: .heavy, design: .rounded))
                     .foregroundStyle(.primary)
 
-                Text("v1.3.0")
+                Text("v1.3.2")
                     .font(.system(size: 8.5, weight: .bold))
                     .padding(.horizontal, 4)
                     .padding(.vertical, 1.5)
@@ -155,8 +155,8 @@ struct TopTabBar: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            tabButton(index: 0, title: "Pin & Phần cứng", icon: "shield.checkered")
-            tabButton(index: 1, title: "Màn hình", icon: "display")
+            tabButton(index: 0, title: "Màn hình", icon: "display")
+            tabButton(index: 1, title: "Pin & Phần cứng", icon: "shield.checkered")
             tabButton(index: 2, title: "Phím tắt & Cửa sổ", icon: "keyboard")
         }
         .padding(3)

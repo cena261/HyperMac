@@ -1,6 +1,6 @@
 # HyperMac — The Ultimate macOS All-in-One Power Utility Suite
 
-[![Version](https://img.shields.io/badge/version-v1.3.1-blue.svg)](https://github.com/khacdai24/HyperMac)
+[![Version](https://img.shields.io/badge/version-v1.3.2-blue.svg)](https://github.com/khacdai24/HyperMac)
 [![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-black.svg)](https://github.com/khacdai24/HyperMac)
 [![Architecture](https://img.shields.io/badge/architecture-Apple%20Silicon%20(ARM64)-brightgreen.svg)](https://github.com/khacdai24/HyperMac)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
@@ -114,6 +114,11 @@ cd HyperMac
 ---
 
 ## 📝 Nhật Ký Phiên Bản (Changelog)
+
+### [v1.3.2] — 2026-10-23
+- **Tối Ưu Trải Nghiệm Menu Bar (Tab Màn Hình Ưu Tiên Số 1):**
+  - Đưa tab `🖥️ Màn hình` lên vị trí đầu tiên (Tab 0) và mặc định mở ngay khi bấm vào icon Menu Bar, đáp ứng thói quen thao tác điều chỉnh độ sáng và màn hình thường xuyên nhất của người dùng.
+  - Sắp xếp lại thứ tự 3 Tab: `🖥️ Màn hình` $\rightarrow$ `🛡️ Pin & Phần cứng` $\rightarrow$ `⚡️ Phím tắt & Cửa sổ`.
 
 ### [v1.3.1] — 2026-10-23
 - **Tái Cấu Trúc Toàn Diện Giao Diện Menu Bar (Tabbed Navigation - Triệt tiêu lỗi che khuất):**
