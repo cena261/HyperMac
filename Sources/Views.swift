@@ -81,7 +81,7 @@ struct ModernHeaderBar: View {
                     .font(.system(size: 13, weight: .heavy, design: .rounded))
                     .foregroundStyle(.primary)
 
-                Text("v1.3.2")
+                Text("v1.3.3")
                     .font(.system(size: 8.5, weight: .bold))
                     .padding(.horizontal, 4)
                     .padding(.vertical, 1.5)
@@ -1129,7 +1129,7 @@ struct BatteryCardView: View {
                             .foregroundStyle(.secondary)
                     }
 
-                    Text("💡 Khi đến lịch, HyperMac sẽ tự động thực hiện quy trình xả 20% ➔ sạc đầy 100% cân bằng cell ➔ tự động khóa lại ở 80% mà bạn không cần phải để ý.")
+                    Text("💡 Quy trình: Khi đến lịch, bạn rút sạc dùng máy tự nhiên xuống ≤ 20%. Khi cắm sạc lại, HyperMac sẽ tự động sạc 100% cân bằng cell ➔ ngâm 15p ➔ tự khóa lại 80% SMC Bypass.")
                         .font(.system(size: 7.2))
                         .foregroundStyle(.secondary)
                         .padding(.top, 1)

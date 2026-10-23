@@ -509,12 +509,18 @@ public class BatteryManager: ObservableObject {
                     calibrationMessage = "Bước 2/3: Sạc đầy 100% để cân bằng cell (Hiện tại: \(currentLevel)%)"
                     setChargingInhibited(false)
                     sendNotification(
-                        title: "⚡️ Hiệu chuẩn pin: Đạt 20%",
-                        body: "Bắt đầu sạc liên tục lên 100% để cân bằng điện áp các cell pin."
+                        title: "⚡️ Hiệu chuẩn pin: Đã đạt 20%",
+                        body: isPluggedIn
+                            ? "Đang sạc liên tục lên 100% để cân bằng điện áp các cell pin."
+                            : "Hãy cắm sạc để HyperMac sạc cân bằng cell lên 100% và tự động khóa lại ở 80%."
                     )
                 } else {
                     setChargingInhibited(true)
-                    calibrationMessage = "Bước 1/3: Xả pin xuống 20% (Hiện tại: \(currentLevel)%)"
+                    if isPluggedIn {
+                        calibrationMessage = "Bước 1/3: Rút sạc dùng máy xuống 20% (Hiện tại: \(currentLevel)%)"
+                    } else {
+                        calibrationMessage = "Bước 1/3: Đang dùng pin xuống 20% (Hiện tại: \(currentLevel)%)"
+                    }
                 }
                 return
 
@@ -614,13 +620,17 @@ public class BatteryManager: ObservableObject {
 
         if daysPassed >= calibrationIntervalDays {
             // Reached schedule!
-            if isPluggedIn {
-                startCalibration(isAutomatic: true)
-            } else {
+            if currentLevel <= 25 && isPluggedIn {
+                // Pin đã thấp sẵn và đang cắm sạc -> chuyển thẳng sang Bước 2 sạc cân bằng
+                calibrationState = .charging
+                calibrationMessage = "Bước 2/3: Đang sạc lên 100% để cân bằng cell (Hiện tại: \(currentLevel)%)"
+                setChargingInhibited(false)
                 sendNotification(
-                    title: "📅 Đến lịch hiệu chuẩn pin (\(calibrationIntervalDays) ngày)",
-                    body: "Hãy cắm sạc để HyperMac tự động cân bằng điện áp các cell và khôi phục độ chính xác cho mạch pin!"
+                    title: "⚡️ Bắt đầu hiệu chuẩn pin tự động",
+                    body: "Pin đang ở mức \(currentLevel)%. HyperMac đang sạc lên 100% để cân bằng cell và sẽ tự động khóa lại ở 80%."
                 )
+            } else if calibrationState == .idle {
+                startCalibration(isAutomatic: true)
             }
         }
     }
@@ -630,14 +640,33 @@ public class BatteryManager: ObservableObject {
             statusMessage = "Cần cấp quyền SMC để hiệu chuẩn pin"
             return
         }
+
+        if currentLevel <= 22 {
+            // Pin đã thấp sẵn -> bắt đầu sạc cân bằng ngay
+            calibrationState = .charging
+            calibrationMessage = "Bước 2/3: Đang sạc lên 100% để cân bằng cell (Hiện tại: \(currentLevel)%)"
+            setChargingInhibited(false)
+            sendNotification(
+                title: "⚡️ Hiệu chuẩn pin: Bắt đầu sạc cân bằng cell",
+                body: "Pin đang ở mức \(currentLevel)%. Đang nạp đầy 100% để cân bằng vi sai điện áp các cell."
+            )
+            return
+        }
+
         calibrationState = .discharging
-        calibrationMessage = "Bước 1/3: Xả pin xuống 20% (Hiện tại: \(currentLevel)%)"
+        if isPluggedIn {
+            calibrationMessage = "Bước 1/3: Rút sạc dùng máy xuống 20% (Hiện tại: \(currentLevel)%)"
+        } else {
+            calibrationMessage = "Bước 1/3: Đang dùng pin xuống 20% (Hiện tại: \(currentLevel)%)"
+        }
         setChargingInhibited(true)
 
         let reason = isAutomatic ? "Tự động theo lịch \(calibrationIntervalDays) ngày" : "Thủ công"
         sendNotification(
             title: "🔬 Bắt đầu hiệu chuẩn pin (\(reason))",
-            body: "Bước 1: Máy đang xả pin xuống 20%. Bạn có thể tiếp tục sử dụng máy bình thường."
+            body: isPluggedIn
+                ? "Bước 1: Rút sạc dùng máy tự nhiên xuống mức 20%. Sau đó cắm sạc lại để HyperMac tự động làm phần còn lại."
+                : "Bước 1: Tiếp tục dùng pin xuống mức 20%. Sau đó cắm sạc lại để HyperMac tự động làm phần còn lại."
         )
     }
 

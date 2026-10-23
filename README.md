@@ -1,6 +1,6 @@
 # HyperMac — The Ultimate macOS All-in-One Power Utility Suite
 
-[![Version](https://img.shields.io/badge/version-v1.3.2-blue.svg)](https://github.com/khacdai24/HyperMac)
+[![Version](https://img.shields.io/badge/version-v1.3.3-blue.svg)](https://github.com/khacdai24/HyperMac)
 [![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-black.svg)](https://github.com/khacdai24/HyperMac)
 [![Architecture](https://img.shields.io/badge/architecture-Apple%20Silicon%20(ARM64)-brightgreen.svg)](https://github.com/khacdai24/HyperMac)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
@@ -114,6 +114,12 @@ cd HyperMac
 ---
 
 ## 📝 Nhật Ký Phiên Bản (Changelog)
+
+### [v1.3.3] — 2026-10-23
+- **Tối Ưu Hóa Quy Trình Hiệu Chuẩn Pin (Natural Cycle & Auto Balancing):**
+  - Làm rõ và hoàn thiện cơ chế xả pin: Hướng dẫn người dùng rút sạc dùng tự nhiên xuống $\le 20\%$ (an toàn nhất cho tuổi thọ hóa chất cell pin, tránh nóng mạch chuyển đổi nguồn).
+  - Tự động hóa giai đoạn sạc: Khi người dùng cắm sạc trở lại ở mức $\le 20\%$, HyperMac tự động nhận diện và chuyển thẳng sang Bước 2 (Nạp đầy 100% cân bằng cell $\rightarrow$ Ngâm 15 phút $\rightarrow$ Tự động khóa lại ở 80% SMC Bypass).
+  - Cập nhật thông báo hệ thống và mẹo hiển thị trực quan trong popover.
 
 ### [v1.3.2] — 2026-10-23
 - **Tối Ưu Trải Nghiệm Menu Bar (Tab Màn Hình Ưu Tiên Số 1):**
