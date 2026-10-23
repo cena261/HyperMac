@@ -1,6 +1,6 @@
 # HyperMac — The Ultimate macOS All-in-One Power Utility Suite
 
-[![Version](https://img.shields.io/badge/version-v1.4.0-blue.svg)](https://github.com/khacdai24/HyperMac)
+[![Version](https://img.shields.io/badge/version-v1.4.1-blue.svg)](https://github.com/khacdai24/HyperMac)
 [![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-black.svg)](https://github.com/khacdai24/HyperMac)
 [![Architecture](https://img.shields.io/badge/architecture-Apple%20Silicon%20(ARM64)-brightgreen.svg)](https://github.com/khacdai24/HyperMac)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
@@ -133,6 +133,12 @@ cd HyperMac
 ---
 
 ## 📝 Nhật Ký Phiên Bản (Changelog)
+
+### [v1.4.1] — 2026-10-23
+- **Tối Ưu AltTab & Clipboard Manager Đa Không Gian (Multi-Desktop Spaces Support):**
+  - **Tự do di chuyển trên mọi Desktop:** Loại bỏ cờ `.stationary` (trước đó khiến HUD bị kẹt cứng ở Desktop khởi tạo ban đầu). Bảng AltTab và Clipboard Manager giờ đây lập tức xuất hiện ngay trên bất kỳ Desktop nào (Desktop 1, Desktop 2, Fullscreen Spaces) mà con trỏ chuột đang hiện diện.
+  - **Hiển thị tinh gọn theo từng không gian (Focused Desktop Workspaces):** Lọc và hiển thị chính xác các cửa sổ đang hoạt động trên màn hình của Desktop hiện tại, giữ cho giao diện siêu gọn nhẹ, không lẫn lộn giữa các không gian làm việc.
+  - **Hỗ trợ khôi phục ứng dụng:** Tự động unhide ứng dụng bị ẩn (`⌘H`) và khôi phục cửa sổ thu nhỏ trên Dock (`minimize`) khi chọn.
 
 ### [v1.4.0] — 2026-10-23
 - **Tính năng mới: Tích hợp Trình Quản Lý Clipboard Thông Minh (Thay thế hoàn toàn Maccy):**

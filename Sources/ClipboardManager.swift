@@ -523,6 +523,7 @@ public class ClipboardManager: ObservableObject {
         )
         panel.isFloatingPanel = true
         panel.level = .floating
+        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle]
         panel.titleVisibility = .hidden
         panel.titlebarAppearsTransparent = true
         panel.isMovableByWindowBackground = true

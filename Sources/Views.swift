@@ -83,7 +83,7 @@ struct ModernHeaderBar: View {
                     .font(.system(size: 13, weight: .heavy, design: .rounded))
                     .foregroundStyle(.primary)
 
-                Text("v1.4.0")
+                Text("v1.4.1")
                     .font(.system(size: 8.5, weight: .bold))
                     .padding(.horizontal, 4)
                     .padding(.vertical, 1.5)

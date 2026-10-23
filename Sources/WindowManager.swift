@@ -347,13 +347,22 @@ public class WindowManager: ObservableObject {
             AXUIElementSetAttributeValue(item.axElement, kAXMinimizedAttribute as CFString, false as CFTypeRef)
         }
 
-        // 2. Raise window via Accessibility
+        // 2. Unhide app if hidden (Cmd+H)
+        if let app = NSRunningApplication(processIdentifier: item.pid) {
+            if app.isHidden {
+                app.unhide()
+            }
+        }
+
+        // 3. Raise window via Accessibility
         AXUIElementPerformAction(item.axElement, kAXRaiseAction as CFString)
 
-        // 3. Activate owning application WITHOUT activateAllWindows (preserves exact z-order)
+        // 4. Activate owning application WITHOUT activateAllWindows (preserves exact z-order)
         if let app = NSRunningApplication(processIdentifier: item.pid) {
-            app.activate(options: [])
-            app.activate()
+            app.activate(options: [.activateIgnoringOtherApps])
+            if #available(macOS 14.0, *) {
+                app.activate()
+            }
         }
     }
 
@@ -418,7 +427,7 @@ public class WindowManager: ObservableObject {
             )
             // ScreenSaver level ensures it floats above all regular and fullscreen windows!
             panel.level = .screenSaver
-            panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
+            panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle]
             panel.isFloatingPanel = true
             panel.hidesOnDeactivate = false
             panel.isOpaque = false
@@ -436,6 +445,7 @@ public class WindowManager: ObservableObject {
         }
 
         guard let panel = overlayPanel else { return }
+        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle]
 
         // Center on screen where mouse currently resides
         let mouseLoc = NSEvent.mouseLocation
@@ -449,7 +459,11 @@ public class WindowManager: ObservableObject {
         panel.setFrame(NSRect(x: posX, y: posY, width: totalWidth, height: panelHeight), display: true)
         panel.makeKeyAndOrderFront(nil)
         panel.orderFrontRegardless()
-        NSApp.activate(ignoringOtherApps: true)
+        if #available(macOS 14.0, *) {
+            NSApp.activate()
+        } else {
+            NSApp.activate(ignoringOtherApps: true)
+        }
 
         self.isVisible = true
         gIsAltTabVisible = true
