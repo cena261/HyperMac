@@ -129,6 +129,8 @@ public class UpdateManager: NSObject, ObservableObject, URLSessionDownloadDelega
         self.state = .checking
 
         Task {
+            var lastStatusCode: Int = 0
+
             // Attempt 1: Standard GitHub Releases API
             let releaseUrl = URL(string: "https://api.github.com/repos/khacdai24/HyperMac/releases/latest")!
             var request = URLRequest(url: releaseUrl)
@@ -138,28 +140,31 @@ public class UpdateManager: NSObject, ObservableObject, URLSessionDownloadDelega
 
             do {
                 let (data, response) = try await URLSession.shared.data(for: request)
-                if let httpResp = response as? HTTPURLResponse, httpResp.statusCode == 200 {
-                    let decoder = JSONDecoder()
-                    let release = try decoder.decode(GitHubRelease.self, from: data)
+                if let httpResp = response as? HTTPURLResponse {
+                    lastStatusCode = httpResp.statusCode
+                    if httpResp.statusCode == 200 {
+                        let decoder = JSONDecoder()
+                        let release = try decoder.decode(GitHubRelease.self, from: data)
 
-                    let tagVer = release.tagName
-                    let notes = release.body ?? release.name ?? "Bản cập nhật mới dành cho HyperMac."
-                    let releasePage = URL(string: release.htmlUrl)
+                        let tagVer = release.tagName
+                        let notes = release.body ?? release.name ?? "Bản cập nhật mới dành cho HyperMac."
+                        let releasePage = URL(string: release.htmlUrl)
 
-                    // Find zip asset
-                    let zipAsset = release.assets.first(where: {
-                        $0.name.lowercased().hasSuffix(".zip") || $0.name.lowercased().contains("hypermac")
-                    })
-                    let dlUrl = zipAsset.flatMap { URL(string: $0.browserDownloadUrl) }
+                        // Find zip asset
+                        let zipAsset = release.assets.first(where: {
+                            $0.name.lowercased().hasSuffix(".zip") || $0.name.lowercased().contains("hypermac")
+                        })
+                        let dlUrl = zipAsset.flatMap { URL(string: $0.browserDownloadUrl) }
 
-                    self.handleDiscoveredVersion(
-                        latestVer: tagVer,
-                        notes: notes,
-                        downloadUrl: dlUrl,
-                        htmlUrl: releasePage,
-                        silent: silent
-                    )
-                    return
+                        self.handleDiscoveredVersion(
+                            latestVer: tagVer,
+                            notes: notes,
+                            downloadUrl: dlUrl,
+                            htmlUrl: releasePage,
+                            silent: silent
+                        )
+                        return
+                    }
                 }
             } catch {
                 appLog("⚠️ GitHub API check failed: \(error.localizedDescription), trying raw fallback...")
@@ -173,22 +178,25 @@ public class UpdateManager: NSObject, ObservableObject, URLSessionDownloadDelega
 
             do {
                 let (mData, mResp) = try await URLSession.shared.data(for: manifestReq)
-                if let httpResp = mResp as? HTTPURLResponse, httpResp.statusCode == 200 {
-                    let decoder = JSONDecoder()
-                    let manifest = try decoder.decode(VersionManifest.self, from: mData)
+                if let httpResp = mResp as? HTTPURLResponse {
+                    lastStatusCode = httpResp.statusCode
+                    if httpResp.statusCode == 200 {
+                        let decoder = JSONDecoder()
+                        let manifest = try decoder.decode(VersionManifest.self, from: mData)
 
-                    let dlUrl = manifest.downloadUrl.flatMap { URL(string: $0) }
-                    let pageUrl = manifest.htmlUrl.flatMap { URL(string: $0) } ?? URL(string: "https://github.com/khacdai24/HyperMac/releases")
-                    let notes = manifest.notes ?? manifest.name ?? "Bản cập nhật mới dành cho HyperMac."
+                        let dlUrl = manifest.downloadUrl.flatMap { URL(string: $0) }
+                        let pageUrl = manifest.htmlUrl.flatMap { URL(string: $0) } ?? URL(string: "https://github.com/khacdai24/HyperMac/releases")
+                        let notes = manifest.notes ?? manifest.name ?? "Bản cập nhật mới dành cho HyperMac."
 
-                    self.handleDiscoveredVersion(
-                        latestVer: manifest.version,
-                        notes: notes,
-                        downloadUrl: dlUrl,
-                        htmlUrl: pageUrl,
-                        silent: silent
-                    )
-                    return
+                        self.handleDiscoveredVersion(
+                            latestVer: manifest.version,
+                            notes: notes,
+                            downloadUrl: dlUrl,
+                            htmlUrl: pageUrl,
+                            silent: silent
+                        )
+                        return
+                    }
                 }
             } catch {
                 appLog("⚠️ Raw manifest check failed: \(error.localizedDescription)")
@@ -196,7 +204,13 @@ public class UpdateManager: NSObject, ObservableObject, URLSessionDownloadDelega
 
             // If both failed
             if !silent {
-                self.state = .failed("Không thể kết nối đến máy chủ GitHub. Vui lòng kiểm tra lại kết nối mạng.")
+                if lastStatusCode == 404 {
+                    self.state = .failed("Kho lưu trữ GitHub đang ở chế độ Riêng tư (Private) hoặc chưa có Release công khai (Mã lỗi 404).")
+                } else if lastStatusCode == 403 {
+                    self.state = .failed("Bị giới hạn tần suất truy vấn từ GitHub API (Mã lỗi 403). Vui lòng thử lại sau ít phút.")
+                } else {
+                    self.state = .failed("Không thể kết nối đến máy chủ GitHub. Vui lòng kiểm tra lại kết nối mạng.")
+                }
             } else {
                 self.state = .idle
             }
