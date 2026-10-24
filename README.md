@@ -1,6 +1,6 @@
 # HyperMac — The Ultimate macOS All-in-One Power Utility Suite
 
-[![Version](https://img.shields.io/badge/version-v1.4.4-blue.svg)](https://github.com/khacdai24/HyperMac)
+[![Version](https://img.shields.io/badge/version-v1.4.5-blue.svg)](https://github.com/khacdai24/HyperMac)
 [![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-black.svg)](https://github.com/khacdai24/HyperMac)
 [![Architecture](https://img.shields.io/badge/architecture-Apple%20Silicon%20(ARM64)-brightgreen.svg)](https://github.com/khacdai24/HyperMac)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
@@ -133,6 +133,11 @@ cd HyperMac
 ---
 
 ## 📝 Nhật Ký Phiên Bản (Changelog)
+
+### [v1.4.5] — 2026-10-24
+- **Thử Nghiệm Tính Năng Tự Động Cập Nhật 1-Chạm (In-App Auto-Update Test Release):**
+  - Bản phát hành thực tế để kiểm tra quy trình tự động cập nhật từ máy khách.
+  - Tải tự động gói `HyperMac.zip` từ GitHub Release và cài đặt trực tiếp.
 
 ### [v1.4.4] — 2026-10-24
 - **Tính năng mới: Kiểm Tra & Tự Động Cập Nhật 1-Chạm (In-App Auto-Update):**
