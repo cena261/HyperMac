@@ -1,6 +1,6 @@
 # HyperMac — The Ultimate macOS All-in-One Power Utility Suite
 
-[![Version](https://img.shields.io/badge/version-v1.4.3-blue.svg)](https://github.com/khacdai24/HyperMac)
+[![Version](https://img.shields.io/badge/version-v1.4.4-blue.svg)](https://github.com/khacdai24/HyperMac)
 [![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-black.svg)](https://github.com/khacdai24/HyperMac)
 [![Architecture](https://img.shields.io/badge/architecture-Apple%20Silicon%20(ARM64)-brightgreen.svg)](https://github.com/khacdai24/HyperMac)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
@@ -133,6 +133,14 @@ cd HyperMac
 ---
 
 ## 📝 Nhật Ký Phiên Bản (Changelog)
+
+### [v1.4.4] — 2026-10-24
+- **Tính năng mới: Kiểm Tra & Tự Động Cập Nhật 1-Chạm (In-App Auto-Update):**
+  - **Tối ưu trải nghiệm chia sẻ mã nguồn mở:** Người dùng tải về từ GitHub không còn phải cập nhật thủ công mỗi khi có bản mới.
+  - **Kiểm tra phiên bản tức thì:** Nút "Kiểm tra cập nhật" ở chân trang (Footer) và huy hiệu phiên bản ở đầu trang (Header) cho phép kiểm tra phiên bản mới từ GitHub Releases và tệp manifest `version.json` bất cứ lúc nào.
+  - **Tự động tải & Cập nhật liền mạch (In-place Atomic Update):** Khi phát hiện bản mới, chỉ cần bấm "Cập nhật ngay", HyperMac sẽ tự động tải file `HyperMac.zip`, giải nén, ghi đè an toàn vào `/Applications/HyperMac.app`, xóa cờ cách ly bảo mật macOS (`xattr -cr`) và khởi động lại phiên bản mới trong vòng 1-2 giây.
+  - **Tùy chọn tự động kiểm tra:** Tự động kiểm tra bản cập nhật mới ngầm mỗi khi mở HyperMac (có thể bật/tắt trong cài đặt cập nhật).
+  - **Tự động đóng gói Release:** Lệnh `./build.sh` tự động tạo sẵn file `build/HyperMac.zip` để đính kèm lên GitHub Releases mỗi khi phát hành phiên bản mới.
 
 ### [v1.4.3] — 2026-10-23
 - **Tính năng mới: Chống Sleep Màn Hình Cấp Thấp (Native Caffeinate):**

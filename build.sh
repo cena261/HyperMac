@@ -63,9 +63,9 @@ cat > "${CONTENTS}/Info.plist" << 'PLIST'
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>CFBundleVersion</key>
-    <string>1.4.3</string>
+    <string>1.4.4</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.4.3</string>
+    <string>1.4.4</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>LSMinimumSystemVersion</key>
@@ -81,6 +81,12 @@ PLIST
 # ── Step 3: Ad-hoc code sign ──
 echo "🔏 Code signing (ad-hoc)..."
 codesign --force --deep --sign - --identifier "com.opensource.hypermac" "${APP_DIR}" 2>/dev/null || true
+
+# ── Step 3.1: Create release zip package ──
+echo "📦 Packaging ${BUILD_DIR}/HyperMac.zip for distribution..."
+rm -f "${BUILD_DIR}/HyperMac.zip"
+ditto -c -k --keepParent "${APP_DIR}" "${BUILD_DIR}/HyperMac.zip"
+echo "✅ Package created: ${BUILD_DIR}/HyperMac.zip"
 
 # ── Step 4: Install to /Applications/ ──
 echo "🚀 Installing to /Applications/HyperMac.app..."

@@ -1,0 +1,8 @@
+{
+  "version": "1.4.4",
+  "name": "HyperMac v1.4.4",
+  "pub_date": "2026-10-24T19:55:00Z",
+  "notes": "• Tích hợp tính năng Tự động kiểm tra và cập nhật ứng dụng 1-chạm (In-App Auto-Update)\n• Tự động tải bản mới, giải nén và thay thế trực tiếp /Applications/HyperMac.app không cần thao tác thủ công\n• Đóng gói tự động bản phát hành HyperMac.zip chuẩn bị sẵn cho GitHub Releases\n• Bổ sung tùy chọn tự động kiểm tra bản mới khi khởi động ứng dụng",
+  "download_url": "https://github.com/khacdai24/HyperMac/releases/download/v1.4.4/HyperMac.zip",
+  "html_url": "https://github.com/khacdai24/HyperMac/releases/tag/v1.4.4"
+}
