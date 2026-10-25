@@ -50,6 +50,8 @@ public class DisplayManager: ObservableObject {
     @Published public var showAlert: Bool = false
 
     private var brightnessCache: [CGDirectDisplayID: Double] = [:]
+    private var cachedDisplayNames: [CGDirectDisplayID: String] = [:]
+    private var cachedDisplayResolutions: [CGDirectDisplayID: String] = [:]
     private var dsGetBrightness: GetBrightnessFunc?
     private var dsSetBrightness: SetBrightnessFunc?
     private var permCheckTimer: Timer?
@@ -130,23 +132,43 @@ public class DisplayManager: ObservableObject {
         // SLSGetDisplayList lists ALL monitors including soft-disconnected ones
         _ = SLSGetDisplayList(16, &displayIDs, &count)
 
+        let physicalExternalNames = getAppleSiliconExternalDisplayNames()
         var externalIdx = 1
         var updatedList: [DisplayInfo] = []
 
         for i in 0..<Int(count) {
             let id = displayIDs[i]
             let isBuiltIn = CGDisplayIsBuiltin(id) != 0
-            let isOnline = (CGDisplayIsOnline(id) != 0)
+            let isActive = (CGDisplayIsActive(id) != 0)
             let bounds = CGDisplayBounds(id)
 
-            // Filter out offline phantom/unplugged display descriptors (e.g. 1x1 offline ports)
-            if !isBuiltIn && (!isOnline || (bounds.width <= 10 && bounds.height <= 10)) {
+            let hasValidSize = (bounds.width > 10 && bounds.height > 10)
+            let isKnownDisplay = (cachedDisplayNames[id] != nil || monitors.contains(where: { $0.id == id }))
+            let isPhysicallyConnected = !physicalExternalNames.isEmpty
+
+            // Filter out truly non-existent phantom ports (never known, never connected, no physical cable)
+            if !isBuiltIn && !hasValidSize && !isKnownDisplay && !isPhysicallyConnected {
                 continue
             }
 
-            let name = getDisplayName(for: id, isBuiltIn: isBuiltIn)
-            let resolution = "\(Int(bounds.width)) × \(Int(bounds.height))"
-            let isActive = (CGDisplayIsActive(id) != 0)
+            var name = getDisplayName(for: id, isBuiltIn: isBuiltIn)
+            if !isBuiltIn && (name == "External Display" || name.isEmpty) && !physicalExternalNames.isEmpty {
+                let nameIndex = min(externalIdx - 1, physicalExternalNames.count - 1)
+                name = physicalExternalNames[nameIndex]
+            }
+
+            // Cache metadata when active or has real dimensions
+            if hasValidSize {
+                cachedDisplayNames[id] = name
+                cachedDisplayResolutions[id] = "\(Int(bounds.width)) × \(Int(bounds.height))"
+            }
+
+            let resolution: String
+            if hasValidSize {
+                resolution = "\(Int(bounds.width)) × \(Int(bounds.height))"
+            } else {
+                resolution = cachedDisplayResolutions[id] ?? "Đã ngắt mềm"
+            }
 
             // Load cached brightness from UserDefaults or in-memory cache
             if brightnessCache[id] == nil {
@@ -170,7 +192,7 @@ public class DisplayManager: ObservableObject {
 
             updatedList.append(DisplayInfo(
                 id: id,
-                name: name,
+                name: cachedDisplayNames[id] ?? name,
                 isBuiltIn: isBuiltIn,
                 brightness: currentBrightness,
                 isConnected: isActive,
@@ -202,17 +224,50 @@ public class DisplayManager: ObservableObject {
         monitors.first { $0.id == selectedID } ?? monitors.first
     }
 
-    // MARK: - Display Name Lookup via IOKit
+    // MARK: - Display Name Lookup via IOKit (Apple Silicon & Intel)
+
+    private func getAppleSiliconExternalDisplayNames() -> [String] {
+        var names: [String] = []
+        var iter = io_iterator_t()
+        let matching = IOServiceMatching("AppleDisplayConnectionManager")
+        if IOServiceGetMatchingServices(kIOMainPortDefault, matching, &iter) == kIOReturnSuccess {
+            var service = IOIteratorNext(iter)
+            while service != 0 {
+                var props: Unmanaged<CFMutableDictionary>?
+                if IORegistryEntryCreateCFProperties(service, &props, kCFAllocatorDefault, 0) == kIOReturnSuccess,
+                   let dict = props?.takeRetainedValue() as? [String: Any] {
+                    if let mapping = dict["ConnectionMapping"] as? [[String: Any]] {
+                        for m in mapping {
+                            if let name = m["ProductName"] as? String, !name.isEmpty {
+                                names.append(name)
+                            }
+                        }
+                    }
+                }
+                IOObjectRelease(service)
+                service = IOIteratorNext(iter)
+            }
+            IOObjectRelease(iter)
+        }
+        return names
+    }
 
     private func getDisplayName(for displayID: CGDirectDisplayID, isBuiltIn: Bool) -> String {
         if isBuiltIn { return "Built-in Retina Display" }
 
+        // 1. Try Apple Silicon IOKit connection manager first
+        let asNames = getAppleSiliconExternalDisplayNames()
+        if let first = asNames.first, !first.isEmpty {
+            return first
+        }
+
+        // 2. Try classic Intel IODisplayConnect
         let targetVendor = CGDisplayVendorNumber(displayID)
         let targetModel  = CGDisplayModelNumber(displayID)
 
         var iter = io_iterator_t()
         guard IOServiceGetMatchingServices(
-            kIOMainPort,
+            kIOMainPortDefault,
             IOServiceMatching("IODisplayConnect"),
             &iter
         ) == kIOReturnSuccess else {
@@ -370,13 +425,6 @@ public class DisplayManager: ObservableObject {
         let targetID = monitor.id
         let shouldEnable = !currentlyActive
 
-        if shouldEnable && !monitor.isBuiltIn && CGDisplayIsOnline(targetID) == 0 {
-            alertMessage = "Màn hình ngoài hiện không có tín hiệu cáp kết nối vật lý với máy."
-            showAlert = true
-            refreshDisplays()
-            return
-        }
-
         appLog("⚡️ toggleConnection: target='\(monitor.name)' (id=\(targetID)) -> willEnable=\(shouldEnable)")
 
         var config: CGDisplayConfigRef?
@@ -399,7 +447,7 @@ public class DisplayManager: ObservableObject {
         guard commitResult == .success else {
             CGRestorePermanentDisplayConfiguration()
             if shouldEnable {
-                alertMessage = "Không thể bật màn hình ngoài do thiếu tín hiệu cáp hoặc nguồn điện. Vui lòng kiểm tra lại kết nối vật lý."
+                alertMessage = "Không thể bật lại màn hình ngoài. Có vẻ cáp kết nối đã bị rút khỏi máy hoặc màn hình bị mất nguồn điện."
             } else {
                 alertMessage = "Lỗi áp dụng cấu hình màn hình vào WindowServer (Mã lỗi: \(commitResult.rawValue))."
             }

@@ -105,7 +105,7 @@ struct ModernHeaderBar: View {
                     updateManager.checkForUpdates(silent: false)
                 } label: {
                     HStack(spacing: 3) {
-                        Text("v1.4.5")
+                        Text("v1.4.6")
                             .font(.system(size: 8.5, weight: .bold))
                         if updateManager.hasNewUpdate {
                             Circle()
@@ -783,16 +783,34 @@ struct DisplayCardView: View {
                 }
             } else {
                 HStack {
-                    Text("Màn hình đang ngắt kết nối mềm")
-                        .font(.system(size: 8.5))
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Button("Bật lại") {
-                        displayManager.toggleConnection(for: monitor)
+                    HStack(spacing: 5) {
+                        Circle()
+                            .fill(Color.orange.opacity(0.8))
+                            .frame(width: 5, height: 5)
+                        Text("Đang ngắt mềm (Đã tắt)")
+                            .font(.system(size: 8.5, weight: .medium))
+                            .foregroundStyle(.secondary)
                     }
-                    .font(.system(size: 8.5, weight: .bold))
-                    .controlSize(.mini)
+
+                    Spacer()
+
+                    Button {
+                        displayManager.toggleConnection(for: monitor)
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "power")
+                                .font(.system(size: 8, weight: .bold))
+                            Text("Bật lại")
+                                .font(.system(size: 8.5, weight: .bold))
+                        }
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 3.5)
+                        .background(Capsule().fill(Color.accentColor))
+                        .foregroundStyle(Color.white)
+                    }
+                    .buttonStyle(.plain)
                 }
+                .padding(.vertical, 2)
             }
         }
         .padding(8)
@@ -822,11 +840,12 @@ struct QuickActionsBar: View {
                         Image(systemName: ext.isConnected ? "display.slash" : "display")
                             .font(.system(size: 9))
                         Text(ext.isConnected ? "Ngắt màn ngoài" : "Bật màn ngoài")
-                            .font(.system(size: 9))
+                            .font(.system(size: 9, weight: ext.isConnected ? .regular : .bold))
                     }
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(RoundedRectangle(cornerRadius: 5).fill(Color(nsColor: .controlBackgroundColor)))
+                    .foregroundStyle(ext.isConnected ? Color.primary : Color.accentColor)
                 }
                 .buttonStyle(.plain)
             }
@@ -837,9 +856,13 @@ struct QuickActionsBar: View {
                 Button {
                     displayManager.connectAllDisplays()
                 } label: {
-                    Text("Bật tất cả màn hình")
-                        .font(.system(size: 9, weight: .bold))
-                        .foregroundStyle(Color.accentColor)
+                    HStack(spacing: 4) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 8.5))
+                        Text("Bật tất cả màn hình")
+                            .font(.system(size: 9, weight: .bold))
+                    }
+                    .foregroundStyle(Color.accentColor)
                 }
                 .buttonStyle(.plain)
             }

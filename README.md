@@ -1,6 +1,6 @@
 # HyperMac — The Ultimate macOS All-in-One Power Utility Suite
 
-[![Version](https://img.shields.io/badge/version-v1.4.5-blue.svg)](https://github.com/khacdai24/HyperMac)
+[![Version](https://img.shields.io/badge/version-v1.4.6-blue.svg)](https://github.com/khacdai24/HyperMac)
 [![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-black.svg)](https://github.com/khacdai24/HyperMac)
 [![Architecture](https://img.shields.io/badge/architecture-Apple%20Silicon%20(ARM64)-brightgreen.svg)](https://github.com/khacdai24/HyperMac)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
@@ -133,6 +133,13 @@ cd HyperMac
 ---
 
 ## 📝 Nhật Ký Phiên Bản (Changelog)
+
+### [v1.4.6] — 2026-10-25
+- **Sửa Lỗi: Giữ Nguyên Thẻ Màn Hình Ngoài Khi Bấm 'Ngắt Mềm' (Không Bị Mất Màn Hình):**
+  - **Khắc phục lỗi biến mất thẻ:** Trước đây khi bấm "Ngắt màn ngoài", WindowServer thu nhỏ độ phân giải màn hình về $1 \times 1$ khiến bộ lọc hiểu nhầm là cổng ảo và loại bỏ khỏi danh sách, dẫn đến việc người dùng không tìm thấy nút "Bật lại".
+  - **Duy trì thẻ và trạng thái rõ ràng:** Thẻ màn hình ngoài được giữ nguyên vẹn trong danh sách với nhãn `Đang ngắt mềm (Đã tắt)` cùng nút **`Bật lại`** nổi bật với biểu tượng nguồn.
+  - **Cập nhật thanh QuickActionsBar:** Nút chuyển đổi nhanh tự động đổi tên và màu sắc thành `Bật màn ngoài` (màu xanh nổi bật) và `Bật tất cả màn hình` ngay khi có màn hình bị ngắt.
+  - **Nhận diện chính xác tên màn hình ngoài trên Apple Silicon:** Tích hợp IOKit `AppleDisplayConnectionManager` giúp đọc đúng tên sản phẩm thực tế của màn hình (ví dụ: `U280-Pro`) thay vì chỉ hiện tên chung `External Display`.
 
 ### [v1.4.5] — 2026-10-24
 - **Thử Nghiệm Tính Năng Tự Động Cập Nhật 1-Chạm (In-App Auto-Update Test Release):**
