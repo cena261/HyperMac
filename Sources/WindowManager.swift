@@ -25,6 +25,45 @@ private let cgCreateImgSym: CGWindowListCreateImageFunc? = {
     return nil
 }()
 
+/// Downsample a CGImage to a compact thumbnail (maxDimension ~320px) to conserve RAM.
+/// Keeps memory usage at ~200KB per preview instead of ~33MB uncompressed raw Retina bitmap!
+private func downsample(cgImg: CGImage, maxDimension: CGFloat = 320) -> NSImage? {
+    let w = CGFloat(cgImg.width)
+    let h = CGFloat(cgImg.height)
+    guard w > 0 && h > 0 else { return nil }
+
+    let scale = min(maxDimension / w, maxDimension / h)
+    if scale >= 1.0 {
+        return NSImage(cgImage: cgImg, size: NSSize(width: w / 2, height: h / 2))
+    }
+
+    let destWidth = max(1, Int(w * scale))
+    let destHeight = max(1, Int(h * scale))
+
+    let colorSpace = CGColorSpaceCreateDeviceRGB()
+    let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue
+    guard let context = CGContext(
+        data: nil,
+        width: destWidth,
+        height: destHeight,
+        bitsPerComponent: 8,
+        bytesPerRow: destWidth * 4,
+        space: colorSpace,
+        bitmapInfo: bitmapInfo
+    ) else {
+        return NSImage(cgImage: cgImg, size: NSSize(width: w / 2, height: h / 2))
+    }
+
+    context.interpolationQuality = .medium
+    context.draw(cgImg, in: CGRect(x: 0, y: 0, width: destWidth, height: destHeight))
+
+    guard let downsampledCG = context.makeImage() else {
+        return NSImage(cgImage: cgImg, size: NSSize(width: w / 2, height: h / 2))
+    }
+
+    return NSImage(cgImage: downsampledCG, size: NSSize(width: CGFloat(destWidth) / 2, height: CGFloat(destHeight) / 2))
+}
+
 /// Capture thumbnail ONLY when Screen Recording permission is active.
 /// We use option 8 (kCGWindowListOptionIncludingWindow) and CGRect.null to isolate ONLY that specific window!
 private func captureThumbnail(wid: CGWindowID) -> NSImage? {
@@ -37,7 +76,7 @@ private func captureThumbnail(wid: CGWindowID) -> NSImage? {
     // CGRect.null tells CoreGraphics to use the window's exact native frame!
     if let imgRef = createFn(CGRect.null, 8, wid, 1) {
         let cgImg = imgRef.takeRetainedValue()
-        return NSImage(cgImage: cgImg, size: NSSize(width: cgImg.width / 2, height: cgImg.height / 2))
+        return downsample(cgImg: cgImg, maxDimension: 320)
     }
     return nil
 }
@@ -316,11 +355,11 @@ public class WindowManager: ObservableObject {
         isCommitInProgress = true
 
         let targetIndex = selectedIndex
+        let targetItem = (targetIndex >= 0 && targetIndex < windows.count) ? windows[targetIndex] : nil
+
         hideOverlay()
 
-        if targetIndex >= 0 && targetIndex < windows.count {
-            let target = windows[targetIndex]
-            
+        if let target = targetItem {
             // Push active window to the top of the MRU stack!
             if let wid = target.windowID {
                 mruWindowIDs.removeAll(where: { $0 == wid })
@@ -472,5 +511,11 @@ public class WindowManager: ObservableObject {
         overlayPanel?.orderOut(nil)
         self.isVisible = false
         gIsAltTabVisible = false
+
+        // Purge cached window thumbnails and items immediately to release RAM!
+        for i in 0..<windows.count {
+            windows[i].thumbnail = nil
+        }
+        self.windows.removeAll(keepingCapacity: false)
     }
 }

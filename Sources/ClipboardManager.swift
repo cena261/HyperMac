@@ -245,10 +245,10 @@ public class ClipboardManager: ObservableObject {
         if let image = NSImage(pasteboard: pb) {
             let size = image.size
             if size.width > 2 && size.height > 2 {
-                let thumbnail = image.resized(maxDimension: 240)
+                let thumbnail = image.resized(maxDimension: 200)
                 let tiffData = thumbnail?.tiffRepresentation
                 let bitmap = tiffData.flatMap { NSBitmapImageRep(data: $0) }
-                let pngData = bitmap?.representation(using: .png, properties: [:])
+                let jpgData = bitmap?.representation(using: .jpeg, properties: [.compressionFactor: 0.65])
 
                 let title = "Ảnh (\(Int(size.width)) × \(Int(size.height))px)"
                 let detail = "Định dạng ảnh clipboard"
@@ -258,7 +258,7 @@ public class ClipboardManager: ObservableObject {
                     type: .image,
                     title: title,
                     detail: detail,
-                    imageData: pngData,
+                    imageData: jpgData,
                     sourceAppName: appName,
                     sourceBundleID: bundleID,
                     timestamp: Date(),
@@ -555,8 +555,26 @@ public class ClipboardManager: ObservableObject {
         guard FileManager.default.fileExists(atPath: storageURL.path) else { return }
         do {
             let data = try Data(contentsOf: storageURL)
-            let loaded = try JSONDecoder().decode([ClipItem].self, from: data)
+            var loaded = try JSONDecoder().decode([ClipItem].self, from: data)
+
+            // Compress existing large image clips to save disk & RAM footprint
+            var modified = false
+            for i in 0..<loaded.count {
+                if loaded[i].type == .image, let imgData = loaded[i].imageData, imgData.count > 40_000 {
+                    if let nsImg = NSImage(data: imgData),
+                       let down = nsImg.resized(maxDimension: 200),
+                       let tiff = down.tiffRepresentation,
+                       let rep = NSBitmapImageRep(data: tiff),
+                       let compressed = rep.representation(using: .jpeg, properties: [.compressionFactor: 0.65]) {
+                        loaded[i].imageData = compressed
+                        modified = true
+                    }
+                }
+            }
             self.items = loaded
+            if modified {
+                saveItemsToDisk()
+            }
         } catch {
             appLog("Failed to load clipboard items: \(error.localizedDescription)")
         }
