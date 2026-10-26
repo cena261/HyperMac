@@ -276,14 +276,17 @@ private func eventTapCallback(
             }
         }
 
-        // Option + Command + Arrow keys -> Move to Display (Next / Previous)
-        let isOptCmd = flags.contains(.maskAlternate) && flags.contains(.maskCommand) && !flags.contains(.maskControl)
-        if isOptCmd {
+        // Option + Command + Arrow keys (or Ctrl + Option + Command + Arrow keys - Rectangle standard)
+        // -> Move to Display (Next / Previous)
+        let isNextPrevDisplay = flags.contains(.maskAlternate) && flags.contains(.maskCommand)
+        if isNextPrevDisplay {
             switch keycode {
             case 124, 126: // Right or Up Arrow -> Next Display
+                appLog("⌨️ Shortcut: Move Window to Next Display")
                 DispatchQueue.main.async { WindowSnapManager.shared.moveActiveWindowToDisplay(isNext: true) }
                 return nil
             case 123, 125: // Left or Down Arrow -> Previous Display
+                appLog("⌨️ Shortcut: Move Window to Previous Display")
                 DispatchQueue.main.async { WindowSnapManager.shared.moveActiveWindowToDisplay(isNext: false) }
                 return nil
             default:
@@ -340,7 +343,11 @@ public class KeyInterceptor {
         )
 
         guard let validTap = tap else {
-            appLog("⚠️ KeyInterceptor: Could not create session CGEventTap. Accessibility permission required.")
+            let trusted = AXIsProcessTrusted()
+            appLog("⚠️ KeyInterceptor: Could not create session CGEventTap. AXIsProcessTrusted=\(trusted). Retrying in 1.5s...")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+                self?.start()
+            }
             return
         }
 
