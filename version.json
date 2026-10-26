@@ -3,6 +3,6 @@
   "name": "HyperMac v1.4.6",
   "pub_date": "2026-10-25T22:25:00Z",
   "notes": "• Sửa lỗi màn hình ngoài bị biến mất khỏi danh sách sau khi bấm 'Ngắt mềm'\n• Giữ nguyên thẻ màn hình ngoài ở trạng thái 'Đang ngắt mềm' kèm nút 'Bật lại' nổi bật\n• Tự động nhận diện tên màn hình ngoài thực tế trên chip Apple Silicon (ví dụ: U280-Pro)\n• Tối ưu thanh QuickActionsBar chuyển đổi trạng thái Bật/Ngắt màn hình ngoài mượt mà",
-  "download_url": "https://github.com/khacdai24/HyperMac/releases/download/v1.4.6/HyperMac.zip",
-  "html_url": "https://github.com/khacdai24/HyperMac/releases/tag/v1.4.6"
+  "download_url": "https://github.com/mrgoose000000-gif/HyperMac/releases/download/v1.4.6/HyperMac.zip",
+  "html_url": "https://github.com/mrgoose000000-gif/HyperMac/releases/tag/v1.4.6"
 }

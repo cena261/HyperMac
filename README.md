@@ -1,8 +1,8 @@
 # HyperMac — The Ultimate macOS All-in-One Power Utility Suite
 
-[![Version](https://img.shields.io/badge/version-v1.4.6-blue.svg)](https://github.com/khacdai24/HyperMac)
-[![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-black.svg)](https://github.com/khacdai24/HyperMac)
-[![Architecture](https://img.shields.io/badge/architecture-Apple%20Silicon%20(ARM64)-brightgreen.svg)](https://github.com/khacdai24/HyperMac)
+[![Version](https://img.shields.io/badge/version-v1.4.6-blue.svg)](https://github.com/mrgoose000000-gif/HyperMac)
+[![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-black.svg)](https://github.com/mrgoose000000-gif/HyperMac)
+[![Architecture](https://img.shields.io/badge/architecture-Apple%20Silicon%20(ARM64)-brightgreen.svg)](https://github.com/mrgoose000000-gif/HyperMac)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
 
 **HyperMac** là bộ siêu công cụ tất-cả-trong-một (All-in-One Super Suite) viết bằng **Swift thuần** dành riêng cho macOS Apple Silicon. Ứng dụng siêu nhẹ, mượt mà, khởi động tức thì và **hoàn toàn miễn phí**, thay thế trọn bộ 5 ứng dụng nặng nề riêng lẻ: **Rectangle**, **AltTab**, **Maccy**, **AlDente Pro**, và **BetterDisplay**.
@@ -116,7 +116,7 @@ Mở từ Spotlight (`Cmd + Space` gõ `HyperMac`) hoặc bấm vào icon `⌘` 
 Yêu cầu: macOS 14.0 trở lên, Apple Silicon Mac (M1/M2/M3/M4), Xcode Command Line Tools.
 
 ```bash
-git clone https://github.com/khacdai24/HyperMac.git
+git clone https://github.com/mrgoose000000-gif/HyperMac.git
 cd HyperMac
 ./build.sh
 ```
