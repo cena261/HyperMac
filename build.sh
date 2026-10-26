@@ -63,9 +63,9 @@ cat > "${CONTENTS}/Info.plist" << 'PLIST'
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>CFBundleVersion</key>
-    <string>1.4.6</string>
+    <string>1.4.7</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.4.6</string>
+    <string>1.4.7</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>LSMinimumSystemVersion</key>
@@ -74,6 +74,14 @@ cat > "${CONTENTS}/Info.plist" << 'PLIST'
     <true/>
     <key>NSHighResolutionCapable</key>
     <true/>
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>HyperMac sử dụng Bluetooth để tự động ngắt kết nối khi gập nắp máy (Sleep Guard), giúp chống tụt pin và chống nóng máy khi ngủ.</string>
+    <key>NSBluetoothPeripheralUsageDescription</key>
+    <string>HyperMac quản lý nguồn Bluetooth khi máy Mac vào chế độ ngủ để tiết kiệm pin.</string>
+    <key>NSScreenCaptureUsageDescription</key>
+    <string>HyperMac cần quyền ghi màn hình để hiển thị ảnh xem trước các cửa sổ trong trình chuyển đổi Alt+Tab.</string>
+    <key>NSAppleEventsUsageDescription</key>
+    <string>HyperMac sử dụng AppleEvents để điều khiển các ứng dụng và màn hình.</string>
 </dict>
 </plist>
 PLIST

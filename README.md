@@ -1,6 +1,6 @@
 # HyperMac — The Ultimate macOS All-in-One Power Utility Suite
 
-[![Version](https://img.shields.io/badge/version-v1.4.6-blue.svg)](https://github.com/mrgoose000000-gif/HyperMac)
+[![Version](https://img.shields.io/badge/version-v1.4.7-blue.svg)](https://github.com/mrgoose000000-gif/HyperMac)
 [![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-black.svg)](https://github.com/mrgoose000000-gif/HyperMac)
 [![Architecture](https://img.shields.io/badge/architecture-Apple%20Silicon%20(ARM64)-brightgreen.svg)](https://github.com/mrgoose000000-gif/HyperMac)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
@@ -133,6 +133,19 @@ cd HyperMac
 ---
 
 ## 📝 Nhật Ký Phiên Bản (Changelog)
+
+### [v1.4.7] — 2026-10-26
+- **Sửa Lỗi Tự Tắt/Crash Khi Gập Màn Hình MacBook (Sleep Guard TCC Crash Fix):**
+  - **Khắc phục lỗi TCC SIGABRT:** Trước đây khi gập màn hình MacBook, tính năng Sleep Guard tự động kích hoạt ngắt Bluetooth chống hao pin. Tuy nhiên do `Info.plist` thiếu trường `NSBluetoothAlwaysUsageDescription`, hệ thống bảo mật macOS TCC đã chủ động crash tiến trình với mã `SIGABRT`.
+  - **Bổ sung quyền bảo mật đầy đủ:** Đã thêm `NSBluetoothAlwaysUsageDescription` và `NSBluetoothPeripheralUsageDescription` vào `Info.plist`.
+  - **Bộ lọc an toàn (Safety Guard):** Bổ sung kiểm tra bundle metadata trong `BluetoothManager.swift` để không bao giờ gọi hàm Bluetooth cấp thấp nếu thiếu quyền, ngăn chặn triệt để nguy cơ crash.
+- **Tối Ưu Hóa Bộ Nhớ RAM (-76% Footprint):**
+  - Giảm Physical Footprint từ ~150MB xuống chỉ còn **~35MB**.
+  - Tự động downsample ảnh chụp màn hình AltTab về kích thước tối đa 320px (~200KB thay vì 33MB/cửa sổ uncompressed raw).
+  - Tự động thu hồi RAM khi đóng overlay AltTab (`hideOverlay`).
+  - Nén ảnh clipboard sang định dạng JPEG chất lượng cao, thu nhỏ dung lượng `clipboard.json` từ 6.3MB xuống 477KB.
+- **Chuyển Cửa Sổ Đa Màn Hình Chuẩn Rectangle:**
+  - Hoàn thiện thuật toán tính tỷ lệ khung hình relativePositionedRect, settlement trễ 30ms cho WindowServer, giữ nguyên 100% kích thước cửa sổ khi chuyển giữa Retina và màn ngoài 1080p/2K/4K.
 
 ### [v1.4.6] — 2026-10-25
 - **Sửa Lỗi: Giữ Nguyên Thẻ Màn Hình Ngoài Khi Bấm 'Ngắt Mềm' (Không Bị Mất Màn Hình):**

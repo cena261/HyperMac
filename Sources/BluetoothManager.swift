@@ -31,16 +31,22 @@ public final class BluetoothManager {
     }
 
     public var isAvailable: Bool {
-        return isLoaded
+        guard isLoaded else { return false }
+        // Crucial TCC privacy guard: Never call IOBluetooth if the bundle lacks NSBluetoothAlwaysUsageDescription!
+        // Without this key in Info.plist, macOS TCC kernel daemon instantly aborts the app with SIGABRT!
+        guard Bundle.main.object(forInfoDictionaryKey: "NSBluetoothAlwaysUsageDescription") != nil else {
+            return false
+        }
+        return true
     }
 
     public var isPowerOn: Bool {
         get {
-            guard let getPower = getPowerState else { return true }
+            guard isAvailable, let getPower = getPowerState else { return true }
             return getPower() != 0
         }
         set {
-            guard let setPower = setPowerState else { return }
+            guard isAvailable, let setPower = setPowerState else { return }
             _ = setPower(newValue ? 1 : 0)
         }
     }

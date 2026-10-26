@@ -1,8 +1,8 @@
 {
-  "version": "1.4.6",
-  "name": "HyperMac v1.4.6",
-  "pub_date": "2026-10-25T22:25:00Z",
-  "notes": "• Sửa lỗi màn hình ngoài bị biến mất khỏi danh sách sau khi bấm 'Ngắt mềm'\n• Giữ nguyên thẻ màn hình ngoài ở trạng thái 'Đang ngắt mềm' kèm nút 'Bật lại' nổi bật\n• Tự động nhận diện tên màn hình ngoài thực tế trên chip Apple Silicon (ví dụ: U280-Pro)\n• Tối ưu thanh QuickActionsBar chuyển đổi trạng thái Bật/Ngắt màn hình ngoài mượt mà",
-  "download_url": "https://github.com/mrgoose000000-gif/HyperMac/releases/download/v1.4.6/HyperMac.zip",
-  "html_url": "https://github.com/mrgoose000000-gif/HyperMac/releases/tag/v1.4.6"
+  "version": "1.4.7",
+  "name": "HyperMac v1.4.7",
+  "pub_date": "2026-10-26T08:35:00Z",
+  "notes": "• Sửa triệt để lỗi crash tự tắt app khi gập nắp máy MacBook: Bổ sung quyền bảo mật NSBluetoothAlwaysUsageDescription và bộ lọc TCC an toàn cho Sleep Guard (chống tụt pin qua đêm)\n• Tối ưu hóa cực mạnh bộ nhớ RAM: Giảm RAM footprint từ ~150MB xuống chỉ còn ~35MB (-76%) nhờ nén bitmap cửa sổ AltTab và ảnh clipboard\n• Tự động thu hồi và giải phóng bộ nhớ ngay sau khi đóng trình chuyển cửa sổ AltTab\n• Hoàn thiện thuật toán chuyển cửa sổ đa màn hình chuẩn Rectangle, giữ nguyên tỷ lệ khung hình tuyệt đối",
+  "download_url": "https://github.com/mrgoose000000-gif/HyperMac/releases/download/v1.4.7/HyperMac.zip",
+  "html_url": "https://github.com/mrgoose000000-gif/HyperMac/releases/tag/v1.4.7"
 }

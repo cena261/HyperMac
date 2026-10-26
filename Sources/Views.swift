@@ -105,7 +105,7 @@ struct ModernHeaderBar: View {
                     updateManager.checkForUpdates(silent: false)
                 } label: {
                     HStack(spacing: 3) {
-                        Text("v1.4.6")
+                        Text("v\(UpdateManager.currentVersion)")
                             .font(.system(size: 8.5, weight: .bold))
                         if updateManager.hasNewUpdate {
                             Circle()
