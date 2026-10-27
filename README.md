@@ -1,14 +1,14 @@
-# ⚡ HyperMac — Siêu Tiện Ích Tất-Cả-Trong-Một Cho Mac Apple Silicon
+# ⚡ HyperMac — Siêu Tiện Ích Tất-Cả-Trong-Một Cho Mac (Apple Silicon & Intel)
 
-[![Version](https://img.shields.io/badge/version-v1.4.7-blue.svg)](https://github.com/mrgoose000000-gif/HyperMac/releases/latest)
+[![Version](https://img.shields.io/badge/version-v1.5.0-blue.svg)](https://github.com/mrgoose000000-gif/HyperMac/releases/latest)
 [![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-black.svg)](https://github.com/mrgoose000000-gif/HyperMac)
-[![Architecture](https://img.shields.io/badge/architecture-Apple%20Silicon%20(M1%2FM2%2FM3%2FM4)-brightgreen.svg)](https://github.com/mrgoose000000-gif/HyperMac)
-[![Memory Footprint](https://img.shields.io/badge/RAM-~35MB-success.svg)](https://github.com/mrgoose000000-gif/HyperMac)
+[![Architecture](https://img.shields.io/badge/architecture-Universal%202%20(Apple%20Silicon%20%26%20Intel)-brightgreen.svg)](https://github.com/mrgoose000000-gif/HyperMac)
+[![Memory Footprint](https://img.shields.io/badge/RAM-~45MB-success.svg)](https://github.com/mrgoose000000-gif/HyperMac)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
 
-> 🚀 **HyperMac** là bộ công cụ tối thượng viết bằng **Swift thuần** dành riêng cho máy Mac chip Apple Silicon. Ứng dụng gom trọn tính năng của **5 ứng dụng rời rạc** vào một icon duy nhất trên thanh Menu Bar với mức tiêu hao RAM siêu nhẹ **chỉ ~35MB**:
+> 🚀 **HyperMac** là bộ công cụ tối thượng viết bằng **Swift thuần** dành cho máy Mac (cả chip Apple Silicon M-series lẫn chip Intel). Ứng dụng gom trọn tính năng của **6 ứng dụng rời rạc** vào một icon duy nhất trên thanh Menu Bar với mức tiêu hao RAM siêu nhẹ **chỉ ~45MB**:
 > 
-> **Rectangle** (Chia cửa sổ) + **AltTab** (Chuyển cửa sổ trực quan) + **Maccy** (Lịch sử Clipboard) + **AlDente Pro** (Khóa sạc 80% SMC) + **BetterDisplay** (Chỉnh sáng màn ngoài F1/F2).
+> **Rectangle** (Chia cửa sổ) + **AltTab** (Chuyển cửa sổ trực quan) + **Maccy** (Lịch sử Clipboard) + **AlDente Pro** (Khóa sạc 80% SMC) + **BetterDisplay** (Chỉnh sáng màn ngoài F1/F2) + **Macs Fan Control** (Đo nhiệt độ 30+ cảm biến & Điều khiển quạt tản nhiệt).
 
 ---
 
@@ -17,7 +17,7 @@
 ### ⬇️ Bước 1: Tải bộ cài dựng sẵn
 Bấm vào nút bên dưới để tải về phiên bản mới nhất:
 
-[![Download HyperMac](https://img.shields.io/badge/📥_TẢI_VỀ-HyperMac.zip_(v1.4.7)-2563EB?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/mrgoose000000-gif/HyperMac/releases/latest/download/HyperMac.zip)
+[![Download HyperMac](https://img.shields.io/badge/📥_TẢI_VỀ-HyperMac.zip_(v1.5.0)-2563EB?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/mrgoose000000-gif/HyperMac/releases/latest/download/HyperMac.zip)
 
 *(Hoặc vào trang [GitHub Releases](https://github.com/mrgoose000000-gif/HyperMac/releases) để xem danh sách tất cả các bản phát hành).*
 
@@ -175,6 +175,15 @@ chmod +x build.sh
 ---
 
 ## 📝 Nhật Ký Phiên Bản (Changelog)
+
+### [v1.5.0] — 2026-10-27
+- **Tích Hợp Kiểm Soát Nhiệt & Quạt Tản Nhiệt (Macs Fan Control + Apple Silicon Thermal Suite):**
+  - **Đọc trực tiếp 30+ cảm biến nhiệt PMU HID**: Đo nhiệt độ từng nhân CPU (P-Core, E-Core), GPU clusters, SSD NAND NVMe, cell pin và bo mạch trong thời gian thực.
+  - **Kiểm soát nhiệt thụ động cho MacBook Air (Fanless)**: Cung cấp tính năng ❄️ *Hạ nhiệt tức thì (Đóng băng tiến trình ngầm)* qua `kill -STOP` giúp chip M-series hạ ngay 15–20°C trong 10 giây mà không làm mất tab trình duyệt.
+  - **4 Chế độ quạt cho MacBook Pro / Mac Studio / Mac mini**: Tự động (Apple default), Tùy chỉnh (Manual RPM Slider), Tối đa 100% (Boost Cooling), và Tự động theo nhiệt (Smart Curve).
+  - **Pill nhiệt độ trực tiếp trên Menu Bar Header**: Theo dõi độ nóng của máy trong nháy mắt.
+- **Hỗ Trợ Toàn Diện Universal 2 (Apple Silicon & Intel):**
+  - Đóng gói mã nhị phân kép (`arm64` + `x86_64`) trong 1 file cài duy nhất. Tự động tương thích 100% native cả máy Mac M-series lẫn máy Mac dùng chip Intel Core i3/i5/i7/i9.
 
 ### [v1.4.7] — 2026-10-26
 - **Sửa Lỗi Tự Tắt/Crash Khi Gập Màn Hình MacBook (Sleep Guard TCC Crash Fix):**

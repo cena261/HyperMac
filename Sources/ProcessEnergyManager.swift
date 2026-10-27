@@ -148,6 +148,12 @@ public class ProcessEnergyManager: ObservableObject {
         processes.removeAll { $0.pid == pid }
     }
 
+    public func freezeTopConsumers() {
+        for p in processes.prefix(3) where !p.isFrozen {
+            freezeProcess(pid: p.pid)
+        }
+    }
+
     private func updateLocalState(pid: Int32, isFrozen: Bool) {
         if let idx = processes.firstIndex(where: { $0.pid == pid }) {
             let p = processes[idx]

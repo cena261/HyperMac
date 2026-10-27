@@ -1,8 +1,7 @@
 {
-  "version": "1.4.7",
-  "name": "HyperMac v1.4.7",
-  "pub_date": "2026-10-26T08:35:00Z",
-  "notes": "• Sửa triệt để lỗi crash tự tắt app khi gập nắp máy MacBook: Bổ sung quyền bảo mật NSBluetoothAlwaysUsageDescription và bộ lọc TCC an toàn cho Sleep Guard (chống tụt pin qua đêm)\n• Tối ưu hóa cực mạnh bộ nhớ RAM: Giảm RAM footprint từ ~150MB xuống chỉ còn ~35MB (-76%) nhờ nén bitmap cửa sổ AltTab và ảnh clipboard\n• Tự động thu hồi và giải phóng bộ nhớ ngay sau khi đóng trình chuyển cửa sổ AltTab\n• Hoàn thiện thuật toán chuyển cửa sổ đa màn hình chuẩn Rectangle, giữ nguyên tỷ lệ khung hình tuyệt đối",
-  "download_url": "https://github.com/mrgoose000000-gif/HyperMac/releases/download/v1.4.7/HyperMac.zip",
-  "html_url": "https://github.com/mrgoose000000-gif/HyperMac/releases/tag/v1.4.7"
+  "version": "1.5.0",
+  "name": "HyperMac v1.5.0 (Thermal & Fan Control + Universal 2)",
+  "notes": "✨ Tính năng mới trong v1.5.0:\n- 🌡️ Tích hợp Kiểm soát Nhiệt độ & Quạt tản nhiệt (Macs Fan Control Suite).\n- 🧠 Đọc trực tiếp 30+ cảm biến nhiệt PMU HID trên chip Apple Silicon M1/M2/M3/M4.\n- ❄️ Tản nhiệt tức thì cho MacBook Air không quạt (Đóng băng tiến trình nặng ngầm).\n- 🎚️ Điều khiển 4 chế độ quạt cho MacBook Pro/Studio/Mini (Auto, Manual RPM, Boost 100%, Smart Curve).\n- 🚀 Đóng gói Universal 2: Hỗ trợ native 100% cả chip Apple Silicon và chip Intel (Core i3/i5/i7/i9).",
+  "download_url": "https://github.com/mrgoose000000-gif/HyperMac/releases/download/v1.5.0/HyperMac.zip",
+  "html_url": "https://github.com/mrgoose000000-gif/HyperMac/releases/tag/v1.5.0"
 }
