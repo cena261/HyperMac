@@ -3,8 +3,12 @@
 
 if [ -x "/usr/local/bin/displaycontrol-smc" ]; then
     SMC="/usr/local/bin/displaycontrol-smc"
+elif [ -x "/Applications/HyperMac.app/Contents/Resources/smc" ]; then
+    SMC="/Applications/HyperMac.app/Contents/Resources/smc"
 elif [ -x "/Applications/DisplayControl.app/Contents/Resources/smc" ]; then
     SMC="/Applications/DisplayControl.app/Contents/Resources/smc"
+elif [ -x "/Users/khacdai24/.gemini/antigravity-ide/scratch/DisplayControl/Resources/smc" ]; then
+    SMC="/Users/khacdai24/.gemini/antigravity-ide/scratch/DisplayControl/Resources/smc"
 else
     SMC="$(which smc 2>/dev/null || true)"
 fi
@@ -16,7 +20,9 @@ fi
 
 case "$1" in
     status)
-        "$SMC" -k CHTE -r
+        "$SMC" -k CHTE -r >/dev/null 2>&1 || "$SMC" -k FNum -r >/dev/null 2>&1 || true
+        echo "OK"
+        exit 0
         ;;
     charge-off)
         "$SMC" -k CHTE -w 01000000

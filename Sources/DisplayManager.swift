@@ -146,15 +146,27 @@ public class DisplayManager: ObservableObject {
             let isKnownDisplay = (cachedDisplayNames[id] != nil || monitors.contains(where: { $0.id == id }))
             let isPhysicallyConnected = !physicalExternalNames.isEmpty
 
+            let vendor = CGDisplayVendorNumber(id)
+            let model = CGDisplayModelNumber(id)
+            let isVirtualDisplay = (vendor == 0x1234 && model == 0x5678) || (id == VirtualDisplayManager.shared.virtualDisplayID)
+
+            // If it's a virtual display but VirtualDisplayManager is disabled, completely skip and remove from cache
+            if isVirtualDisplay && !VirtualDisplayManager.shared.isVirtualDisplayActive {
+                cachedDisplayNames.removeValue(forKey: id)
+                cachedDisplayResolutions.removeValue(forKey: id)
+                continue
+            }
+
             // Filter out truly non-existent phantom ports (never known, never connected, no physical cable)
-            if !isBuiltIn && !hasValidSize && !isKnownDisplay && !isPhysicallyConnected {
+            if !isBuiltIn && !isVirtualDisplay && !hasValidSize && !isKnownDisplay && !isPhysicallyConnected {
                 continue
             }
 
             var name = getDisplayName(for: id, isBuiltIn: isBuiltIn)
-            if !isBuiltIn && (name == "External Display" || name.isEmpty) && !physicalExternalNames.isEmpty {
+            if !isBuiltIn && !isVirtualDisplay && (name == "External Display" || name.isEmpty) && !physicalExternalNames.isEmpty {
                 let nameIndex = min(externalIdx - 1, physicalExternalNames.count - 1)
                 name = physicalExternalNames[nameIndex]
+                externalIdx += 1
             }
 
             // Cache metadata when active or has real dimensions
@@ -254,6 +266,12 @@ public class DisplayManager: ObservableObject {
 
     private func getDisplayName(for displayID: CGDirectDisplayID, isBuiltIn: Bool) -> String {
         if isBuiltIn { return "Built-in Retina Display" }
+
+        let vendor = CGDisplayVendorNumber(displayID)
+        let model  = CGDisplayModelNumber(displayID)
+        if (vendor == 0x1234 && model == 0x5678) || (VirtualDisplayManager.shared.isVirtualDisplayActive && displayID == VirtualDisplayManager.shared.virtualDisplayID) {
+            return "Màn hình ảo (HyperMac)"
+        }
 
         // 1. Try Apple Silicon IOKit connection manager first
         let asNames = getAppleSiliconExternalDisplayNames()

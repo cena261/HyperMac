@@ -41,6 +41,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             button.target = self
         }
 
+        // Macs Fan Control Menu Bar Live Metrics
+        ThermalManager.shared.onMenuBarUpdate = { [weak self] text in
+            guard let button = self?.statusItem.button else { return }
+            if let text = text, !text.isEmpty {
+                button.title = " \(text)"
+                button.imagePosition = .imageLeading
+            } else {
+                button.title = ""
+                button.imagePosition = .imageOnly
+            }
+        }
+        ThermalManager.shared.updateMenuBarDisplay()
+
         // Start Global Key Interceptor (F1/F2, AltTab, Snapping, Clipboard)
         KeyInterceptor.shared.start()
 
@@ -49,6 +62,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Register for display reconfiguration
         CGDisplayRegisterReconfigurationCallback(displayReconfigCallback, nil)
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        ThermalManager.shared.restoreFansToAuto()
+        VirtualDisplayManager.shared.destroyVirtualDisplay()
     }
 
     @objc func togglePopover() {

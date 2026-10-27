@@ -12,6 +12,7 @@ public struct MainView: View {
     @ObservedObject var caffeinateManager: CaffeinateManager = CaffeinateManager.shared
     @ObservedObject var updateManager: UpdateManager = UpdateManager.shared
     @ObservedObject var thermalManager: ThermalManager = ThermalManager.shared
+    @ObservedObject var virtualDisplayManager: VirtualDisplayManager = VirtualDisplayManager.shared
 
     public init(displayManager: DisplayManager) {
         self.displayManager = displayManager
@@ -44,7 +45,11 @@ public struct MainView: View {
                 Group {
                     switch displayManager.selectedMainTab {
                     case 0:
-                        DisplaysTabView(displayManager: displayManager, caffeinateManager: caffeinateManager)
+                        DisplaysTabView(
+                            displayManager: displayManager,
+                            caffeinateManager: caffeinateManager,
+                            virtualDisplayManager: virtualDisplayManager
+                        )
                     case 1:
                         HardwareCareTabView(
                             batteryManager: batteryManager,
@@ -58,7 +63,11 @@ public struct MainView: View {
                             clipboardManager: clipboardManager
                         )
                     default:
-                        DisplaysTabView(displayManager: displayManager, caffeinateManager: caffeinateManager)
+                        DisplaysTabView(
+                            displayManager: displayManager,
+                            caffeinateManager: caffeinateManager,
+                            virtualDisplayManager: virtualDisplayManager
+                        )
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -301,7 +310,7 @@ struct HardwareCareTabView: View {
                 )
                 sectionButton(
                     index: 1,
-                    title: thermalManager.isFanlessModel ? "Nhiệt độ (Thụ động)" : "Quạt & Nhiệt độ",
+                    title: thermalManager.hasFans ? "Quạt & Nhiệt độ" : "Nhiệt độ & Cảm biến",
                     icon: thermalManager.hasFans ? "fanblades.fill" : "thermometer.sun.fill",
                     badge: thermalManager.cpuAvgTemp > 0 ? String(format: "%.0f°C", thermalManager.cpuPeakTemp > 0 ? thermalManager.cpuPeakTemp : thermalManager.cpuAvgTemp) : nil
                 )
@@ -366,60 +375,63 @@ struct HardwareCareTabView: View {
 struct DisplaysTabView: View {
     @ObservedObject var displayManager: DisplayManager
     @ObservedObject var caffeinateManager: CaffeinateManager
+    @ObservedObject var virtualDisplayManager: VirtualDisplayManager = VirtualDisplayManager.shared
 
     var body: some View {
-        VStack(spacing: 8) {
-            // Caffeinate (Anti-Sleep) Control Card
-            CaffeinateCardView(caffeinateManager: caffeinateManager)
-                .padding(.horizontal, 12)
-                .padding(.top, 6)
-
-            // F1/F2 cursor-based brightness setting
-            HStack(spacing: 8) {
-                Image(systemName: "keyboard")
-                    .font(.system(size: 11))
-                    .foregroundStyle(Color.accentColor)
-
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("F1 / F2 chỉnh màn hình theo con trỏ chuột")
-                        .font(.system(size: 10.5, weight: .medium))
-                    Text("Tự nhận diện màn hình trong hoặc ngoài để tăng giảm độ sáng")
-                        .font(.system(size: 7.5))
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                Toggle("", isOn: Binding<Bool>(
-                    get: { displayManager.isCursorBased },
-                    set: { displayManager.isCursorBased = $0 }
-                ))
-                .toggleStyle(.switch)
-                .controlSize(.mini)
-                .labelsHidden()
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 7)
-            .background(RoundedRectangle(cornerRadius: 8).fill(Color.primary.opacity(0.04)))
-            .padding(.horizontal, 12)
-
-            // Display List
+        VStack(spacing: 0) {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 8) {
-                    if displayManager.monitors.isEmpty {
-                        EmptyStateView()
-                    } else {
-                        ForEach(displayManager.monitors) { monitor in
-                            DisplayCardView(
-                                monitor: monitor,
-                                displayManager: displayManager,
-                                isSelected: displayManager.selectedID == monitor.id
-                            )
+                    // Caffeinate (Anti-Sleep) Control Card
+                    CaffeinateCardView(caffeinateManager: caffeinateManager)
+
+                    // Virtual Display (Dummy Screen for Remote Desktop / Headless)
+                    VirtualDisplayCardView(virtualDisplayManager: virtualDisplayManager)
+
+                    // F1/F2 cursor-based brightness setting
+                    HStack(spacing: 8) {
+                        Image(systemName: "keyboard")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Color.accentColor)
+
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("F1 / F2 chỉnh màn hình theo con trỏ chuột")
+                                .font(.system(size: 10.5, weight: .medium))
+                            Text("Tự nhận diện màn hình trong hoặc ngoài để tăng giảm độ sáng")
+                                .font(.system(size: 7.5))
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+
+                        Toggle("", isOn: Binding<Bool>(
+                            get: { displayManager.isCursorBased },
+                            set: { displayManager.isCursorBased = $0 }
+                        ))
+                        .toggleStyle(.switch)
+                        .controlSize(.mini)
+                        .labelsHidden()
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 7)
+                    .background(RoundedRectangle(cornerRadius: 8).fill(Color.primary.opacity(0.04)))
+
+                    // Display List
+                    VStack(spacing: 8) {
+                        if displayManager.monitors.isEmpty {
+                            EmptyStateView()
+                        } else {
+                            ForEach(displayManager.monitors) { monitor in
+                                DisplayCardView(
+                                    monitor: monitor,
+                                    displayManager: displayManager,
+                                    isSelected: displayManager.selectedID == monitor.id
+                                )
+                            }
                         }
                     }
                 }
                 .padding(.horizontal, 12)
-                .padding(.bottom, 6)
+                .padding(.vertical, 6)
             }
 
             // Quick Actions Bar (Soft disconnect)
@@ -517,6 +529,195 @@ struct CaffeinateCardView: View {
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
                         .stroke(caffeinateManager.isActive ? Color.orange.opacity(0.3) : Color.clear, lineWidth: 1)
+                )
+        )
+    }
+}
+
+// MARK: - Virtual Display (Dummy Screen) Card View
+
+struct VirtualDisplayCardView: View {
+    @ObservedObject var virtualDisplayManager: VirtualDisplayManager = VirtualDisplayManager.shared
+
+    var body: some View {
+        VStack(spacing: 8) {
+            // Main Row: Icon, Title, Badge, Settings button, and Switch
+            HStack(spacing: 8) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 7)
+                        .fill(virtualDisplayManager.isVirtualDisplayActive ? Color.purple.opacity(0.2) : Color.primary.opacity(0.06))
+                        .frame(width: 28, height: 28)
+
+                    Image(systemName: "display.2")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(virtualDisplayManager.isVirtualDisplayActive ? Color.purple : Color.secondary)
+                }
+
+                VStack(alignment: .leading, spacing: 1.5) {
+                    HStack(spacing: 6) {
+                        Text("Màn hình ảo (Dummy Display)")
+                            .font(.system(size: 11, weight: .semibold))
+
+                        if virtualDisplayManager.isVirtualDisplayActive {
+                            HStack(spacing: 3) {
+                                Circle()
+                                    .fill(Color.purple)
+                                    .frame(width: 5, height: 5)
+                                Text("\(virtualDisplayManager.currentResolution.width)×\(virtualDisplayManager.currentResolution.height)")
+                                    .font(.system(size: 8.5, weight: .bold, design: .monospaced))
+                            }
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1.5)
+                            .background(Capsule().fill(Color.purple.opacity(0.18)))
+                            .foregroundStyle(Color.purple)
+                        }
+                    }
+
+                    Text(virtualDisplayManager.isVirtualDisplayActive
+                         ? "Đang phát ảo · Tăng tốc GPU cho Parsec / TeamViewer"
+                         : "Tạo màn hình ảo cho máy gập, Mac mini headless")
+                        .font(.system(size: 8))
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                // Expand / Collapse Settings Toggle Button
+                Button {
+                    withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                        virtualDisplayManager.isCardExpanded.toggle()
+                    }
+                } label: {
+                    Image(systemName: virtualDisplayManager.isCardExpanded ? "chevron.up.circle.fill" : "gearshape")
+                        .font(.system(size: 11.5))
+                        .foregroundStyle(virtualDisplayManager.isCardExpanded ? Color.purple : Color.secondary)
+                        .padding(4)
+                        .background(Circle().fill(Color.primary.opacity(0.04)))
+                }
+                .buttonStyle(.plain)
+                .help(virtualDisplayManager.isCardExpanded ? "Thu gọn tùy chọn" : "Tùy chỉnh độ phân giải, HiDPI, Bảo mật")
+
+                Toggle("", isOn: Binding<Bool>(
+                    get: { virtualDisplayManager.isVirtualDisplayActive },
+                    set: { _ in
+                        withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                            virtualDisplayManager.toggleVirtualDisplay()
+                        }
+                    }
+                ))
+                .toggleStyle(.switch)
+                .controlSize(.mini)
+                .labelsHidden()
+            }
+
+            // Expanded Settings Panel
+            if virtualDisplayManager.isCardExpanded || virtualDisplayManager.isVirtualDisplayActive {
+                VStack(spacing: 7) {
+                    Divider().opacity(0.4)
+
+                    // Resolution Preset Header
+                    HStack {
+                        Text("ĐỘ PHÂN GIẢI MÀN HÌNH ẢO")
+                            .font(.system(size: 7.5, weight: .bold))
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text("\(virtualDisplayManager.currentResolution.width)×\(virtualDisplayManager.currentResolution.height) @ \(Int(virtualDisplayManager.currentResolution.refreshRate))Hz")
+                            .font(.system(size: 7.5, weight: .semibold, design: .monospaced))
+                            .foregroundStyle(Color.purple)
+                    }
+
+                    // Resolution Preset Grid (2 columns)
+                    LazyVGrid(columns: [GridItem(.flexible(), spacing: 5), GridItem(.flexible(), spacing: 5)], spacing: 5) {
+                        ForEach(Array(virtualDisplayManager.resolutions.enumerated()), id: \.offset) { index, res in
+                            Button {
+                                virtualDisplayManager.selectedResolutionIndex = index
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Circle()
+                                        .fill(virtualDisplayManager.selectedResolutionIndex == index ? Color.purple : Color.secondary.opacity(0.3))
+                                        .frame(width: 4.5, height: 4.5)
+
+                                    Text(res.name)
+                                        .font(.system(size: 8, weight: virtualDisplayManager.selectedResolutionIndex == index ? .bold : .medium))
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.85)
+
+                                    Spacer(minLength: 0)
+                                }
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 4.5)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 5)
+                                        .fill(virtualDisplayManager.selectedResolutionIndex == index
+                                              ? Color.purple.opacity(0.15)
+                                              : Color.primary.opacity(0.04))
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 5)
+                                        .stroke(virtualDisplayManager.selectedResolutionIndex == index
+                                                ? Color.purple.opacity(0.5)
+                                                : Color.clear, lineWidth: 1)
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+
+                    // Bottom Quick Options: HiDPI toggle & Blackout Screen (Privacy)
+                    HStack(spacing: 6) {
+                        // HiDPI toggle
+                        Button {
+                            virtualDisplayManager.isHiDPIEnabled.toggle()
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: virtualDisplayManager.isHiDPIEnabled ? "checkmark.circle.fill" : "circle")
+                                    .font(.system(size: 9))
+                                    .foregroundStyle(virtualDisplayManager.isHiDPIEnabled ? Color.purple : Color.secondary)
+                                Text("Retina (HiDPI)")
+                                    .font(.system(size: 8.5, weight: .medium))
+                            }
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 3.5)
+                            .background(RoundedRectangle(cornerRadius: 5).fill(Color.primary.opacity(0.04)))
+                        }
+                        .buttonStyle(.plain)
+                        .help("HiDPI giúp hiển thị văn bản và icon siêu mịn chuẩn Retina")
+
+                        Spacer()
+
+                        // Blackout Primary Display for Remote Privacy
+                        Button {
+                            virtualDisplayManager.toggleBlackoutPrimaryScreen()
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: virtualDisplayManager.isBlackoutPrimaryActive ? "eye.slash.fill" : "eye.slash")
+                                    .font(.system(size: 9))
+                                    .foregroundStyle(virtualDisplayManager.isBlackoutPrimaryActive ? Color.yellow : Color.secondary)
+                                Text(virtualDisplayManager.isBlackoutPrimaryActive ? "Đang tắt màn thật" : "Tắt tối màn thật")
+                                    .font(.system(size: 8.5, weight: .medium))
+                                    .foregroundStyle(virtualDisplayManager.isBlackoutPrimaryActive ? Color.yellow : Color.primary)
+                            }
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 3.5)
+                            .background(
+                                RoundedRectangle(cornerRadius: 5)
+                                    .fill(virtualDisplayManager.isBlackoutPrimaryActive ? Color.yellow.opacity(0.15) : Color.primary.opacity(0.04))
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .help("Tắt tối đen màn hình máy thật để chống nhìn trộm khi bạn điều khiển từ xa qua Parsec / TeamViewer")
+                    }
+                    .padding(.top, 2)
+                }
+            }
+        }
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(virtualDisplayManager.isVirtualDisplayActive ? Color.purple.opacity(0.06) : Color.primary.opacity(0.035))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(virtualDisplayManager.isVirtualDisplayActive ? Color.purple.opacity(0.3) : Color.clear, lineWidth: 1)
                 )
         )
     }
@@ -1629,11 +1830,9 @@ struct ThermalAndFanCardView: View {
             // 1. Device Profile & Thermal Health Header
             deviceHeaderCard
 
-            // 2. Hardware Fan Control OR Fanless Passive Cooling
+            // 2. Hardware Fan Control (Macs with fans)
             if thermalManager.hasFans {
                 activeFanControlCard
-            } else {
-                passiveThermalManagementCard
             }
 
             // 3. Apple Silicon 6-Sensor Telemetry Matrix
@@ -1722,11 +1921,38 @@ struct ThermalAndFanCardView: View {
         )
     }
 
-    // MARK: - 2. Active Fan Control Card (for Macs with Fans)
+    // MARK: - 2. Active Fan Control Card (for Macs with Fans - Macs Fan Control Engine)
     private var activeFanControlCard: some View {
         VStack(alignment: .leading, spacing: 8) {
+            // Helper Installation Banner if needed
+            if !BatteryManager.shared.isHelperInstalled {
+                HStack(spacing: 6) {
+                    Image(systemName: "shield.lefthalf.filled.badge.checkmark")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.orange)
+                    Text("Cần cấp quyền SMC để HyperMac chỉnh tốc độ quạt")
+                        .font(.system(size: 7.8))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button {
+                        BatteryManager.shared.installHelper()
+                    } label: {
+                        Text(BatteryManager.shared.isInstallingHelper ? "Đang xử lý..." : "Cấp quyền (1 lần)")
+                            .font(.system(size: 7.5, weight: .bold))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Capsule().fill(Color.orange.opacity(0.18)))
+                            .foregroundStyle(Color.orange)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(6)
+                .background(RoundedRectangle(cornerRadius: 6).fill(Color.orange.opacity(0.06)))
+            }
+
+            // Header
             HStack {
-                Label("Điều khiển tốc độ quạt (SMC)", systemImage: "slider.horizontal.3")
+                Label("Điều khiển quạt (Macs Fan Control)", systemImage: "fanblades.fill")
                     .font(.system(size: 10, weight: .bold))
                     .foregroundStyle(.primary)
 
@@ -1737,7 +1963,7 @@ struct ThermalAndFanCardView: View {
                     .foregroundStyle(.secondary)
             }
 
-            // Fan Speed Dials
+            // Fan Speed Dials (Left & Right Fans on M1 Max)
             ForEach(thermalManager.fans) { fan in
                 VStack(spacing: 3) {
                     HStack {
@@ -1752,7 +1978,7 @@ struct ThermalAndFanCardView: View {
 
                         Text(String(format: "%.0f RPM", fan.currentRPM))
                             .font(.system(size: 11, weight: .heavy, design: .rounded))
-                            .foregroundStyle(fan.currentRPM > 4000 ? Color.orange : Color.primary)
+                            .foregroundStyle(fan.currentRPM > 4500 ? Color.red : (fan.currentRPM > 3000 ? Color.orange : Color.primary))
 
                         Text("/ \(Int(fan.maxRPM))")
                             .font(.system(size: 8))
@@ -1787,7 +2013,7 @@ struct ThermalAndFanCardView: View {
                 .background(RoundedRectangle(cornerRadius: 6).fill(Color.primary.opacity(0.03)))
             }
 
-            // Mode Picker Pills
+            // Mode Picker Pills (Auto / Manual / Sensor-based / Boost)
             HStack(spacing: 3) {
                 ForEach(FanControlMode.allCases, id: \.self) { mode in
                     Button {
@@ -1812,16 +2038,17 @@ struct ThermalAndFanCardView: View {
                 }
             }
 
-            // Manual Slider (if manual mode)
+            // Detailed Controls for Active Mode
             if thermalManager.selectedFanMode == .manual {
-                VStack(spacing: 4) {
+                // Constant RPM Slider + Presets
+                VStack(spacing: 5) {
                     HStack {
-                        Text("Tốc độ mục tiêu:")
+                        Text("Tốc độ mục tiêu cố định:")
                             .font(.system(size: 8))
                             .foregroundStyle(.secondary)
                         Spacer()
                         Text("\(Int(thermalManager.manualRPM)) RPM")
-                            .font(.system(size: 9, weight: .bold, design: .rounded))
+                            .font(.system(size: 9.5, weight: .bold, design: .rounded))
                             .foregroundStyle(Color.accentColor)
                     }
 
@@ -1845,18 +2072,143 @@ struct ThermalAndFanCardView: View {
                 }
                 .padding(6)
                 .background(RoundedRectangle(cornerRadius: 6).fill(Color.primary.opacity(0.03)))
+
             } else if thermalManager.selectedFanMode == .smartCurve {
-                HStack(spacing: 6) {
-                    Image(systemName: "chart.line.uptrend.xyaxis")
-                        .font(.system(size: 9))
-                        .foregroundStyle(Color.accentColor)
-                    Text("Tự động tăng dần tốc độ quạt từ 60°C và đạt 100% công suất khi nhiệt độ CPU chạm 85°C.")
-                        .font(.system(size: 7.5))
-                        .foregroundStyle(.secondary)
+                // Macs Fan Control Sensor-Based Custom Curve
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Text("Cảm biến theo dõi:")
+                            .font(.system(size: 8, weight: .medium))
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text(thermalManager.sensorTarget.title)
+                            .font(.system(size: 8.5, weight: .bold))
+                            .foregroundStyle(Color.accentColor)
+                    }
+
+                    // Sensor Selection Pills
+                    HStack(spacing: 3) {
+                        ForEach(ThermalSensorTarget.allCases, id: \.self) { target in
+                            Button {
+                                thermalManager.sensorTarget = target
+                            } label: {
+                                HStack(spacing: 2.5) {
+                                    Image(systemName: target.icon)
+                                        .font(.system(size: 7))
+                                    Text(target.title.replacingOccurrences(of: "CPU ", with: "").replacingOccurrences(of: "Ổ cứng ", with: ""))
+                                        .font(.system(size: 7.2, weight: thermalManager.sensorTarget == target ? .bold : .medium))
+                                }
+                                .padding(.horizontal, 3.5)
+                                .padding(.vertical, 2.5)
+                                .frame(maxWidth: .infinity)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(thermalManager.sensorTarget == target ? Color.accentColor.opacity(0.2) : Color.primary.opacity(0.04))
+                                )
+                                .foregroundStyle(thermalManager.sensorTarget == target ? Color.accentColor : Color.secondary)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+
+                    // Low and High Temperature Sliders
+                    VStack(spacing: 4) {
+                        HStack {
+                            Text("Bắt đầu tăng quạt khi chạm:")
+                                .font(.system(size: 8))
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text("\(Int(thermalManager.smartCurveStartTemp))°C")
+                                .font(.system(size: 8.5, weight: .bold, design: .rounded))
+                                .foregroundStyle(.cyan)
+                        }
+                        Slider(
+                            value: Binding<Double>(
+                                get: { thermalManager.smartCurveStartTemp },
+                                set: { thermalManager.smartCurveStartTemp = min($0, thermalManager.smartCurveMaxTemp - 5) }
+                            ),
+                            in: 40...75,
+                            step: 1
+                        )
+                        .controlSize(.mini)
+
+                        HStack {
+                            Text("Quạt đạt tối đa 100% khi chạm:")
+                                .font(.system(size: 8))
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text("\(Int(thermalManager.smartCurveMaxTemp))°C")
+                                .font(.system(size: 8.5, weight: .bold, design: .rounded))
+                                .foregroundStyle(.orange)
+                        }
+                        Slider(
+                            value: Binding<Double>(
+                                get: { thermalManager.smartCurveMaxTemp },
+                                set: { thermalManager.smartCurveMaxTemp = max($0, thermalManager.smartCurveStartTemp + 5) }
+                            ),
+                            in: 65...95,
+                            step: 1
+                        )
+                        .controlSize(.mini)
+                    }
+
+                    Text("Quạt giữ tốc độ êm ái khi dưới \(Int(thermalManager.smartCurveStartTemp))°C, tăng đều tuyến tính và đạt công suất tối đa khi chạm \(Int(thermalManager.smartCurveMaxTemp))°C.")
+                        .font(.system(size: 7.2))
+                        .foregroundStyle(.tertiary)
+                        .lineLimit(2)
                 }
                 .padding(6)
                 .background(RoundedRectangle(cornerRadius: 6).fill(Color.primary.opacity(0.03)))
+
+            } else if thermalManager.selectedFanMode == .boost {
+                HStack(spacing: 6) {
+                    Image(systemName: "bolt.fill")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.yellow)
+                    Text("Đang chạy 100% công suất quạt (Max Turbo) để giải nhiệt tức thì cho chip Apple Silicon.")
+                        .font(.system(size: 7.8))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(6)
+                .background(RoundedRectangle(cornerRadius: 6).fill(Color.yellow.opacity(0.08)))
             }
+
+            // Menu Bar Live Tray Monitor (Macs Fan Control signature feature)
+            HStack(spacing: 6) {
+                Image(systemName: "menubar.dock.rectangle")
+                    .font(.system(size: 9))
+                    .foregroundStyle(Color.accentColor)
+
+                Text("Hiện trên Menu Bar:")
+                    .font(.system(size: 8))
+                    .foregroundStyle(.secondary)
+
+                Toggle("", isOn: Binding<Bool>(
+                    get: { thermalManager.showMenuBarMetrics },
+                    set: { thermalManager.showMenuBarMetrics = $0 }
+                ))
+                .toggleStyle(.switch)
+                .controlSize(.mini)
+                .labelsHidden()
+
+                if thermalManager.showMenuBarMetrics {
+                    Spacer()
+                    Button {
+                        thermalManager.menuBarDisplayMode = (thermalManager.menuBarDisplayMode == 0 ? 1 : 0)
+                    } label: {
+                        Text(thermalManager.menuBarDisplayMode == 0 ? "Chỉ nhiệt độ (44°C)" : "Nhiệt độ & Quạt (44°C • 1.5k)")
+                            .font(.system(size: 7.5, weight: .bold))
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 2)
+                            .background(Capsule().fill(Color.accentColor.opacity(0.15)))
+                            .foregroundStyle(Color.accentColor)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Nhấn để chuyển đổi giữa chỉ hiện nhiệt độ hoặc hiện kèm vòng quay quạt trên Menu Bar")
+                }
+            }
+            .padding(6)
+            .background(RoundedRectangle(cornerRadius: 6).fill(Color.primary.opacity(0.03)))
         }
         .padding(8)
         .background(
@@ -1879,67 +2231,6 @@ struct ThermalAndFanCardView: View {
                 .foregroundStyle(Int(thermalManager.manualRPM) == Int(rpm) ? Color.accentColor : Color.secondary)
         }
         .buttonStyle(.plain)
-    }
-
-    // MARK: - 2. Passive Cooling Card (for Fanless MacBook Air)
-    private var passiveThermalManagementCard: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 6) {
-                Image(systemName: "snowflake.circle.fill")
-                    .font(.system(size: 13))
-                    .foregroundStyle(.cyan)
-
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("Kiểm soát nhiệt thụ động (Passive Thermal Engine)")
-                        .font(.system(size: 9.5, weight: .bold))
-                        .foregroundStyle(.primary)
-                    Text("MacBook Air không quạt cơ học • Hạ nhiệt bằng quản lý tiến trình")
-                        .font(.system(size: 7.5))
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-            }
-
-            Text("Thiết kế không quạt giúp máy hoàn toàn yên tĩnh 0dB. Khi làm việc nặng, HyperMac hỗ trợ đóng băng tạm thời các tiến trình ngốn CPU để chip M2 hạ 15–20°C trong 10 giây mà không làm mất tab trình duyệt.")
-                .font(.system(size: 7.8))
-                .foregroundStyle(.secondary)
-                .lineSpacing(1.5)
-
-            // 1-Click Action Button
-            Button {
-                thermalManager.isCoolingTriggered = true
-                thermalManager.coolTimerMessage = "Đang đóng băng tiến trình ngốn CPU..."
-                thermalManager.triggerSoftwareCooling()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    thermalManager.coolTimerMessage = "✅ Đã đóng băng app ngầm! CPU đang hạ nhiệt."
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-                        thermalManager.coolTimerMessage = nil
-                        thermalManager.isCoolingTriggered = false
-                    }
-                }
-            } label: {
-                HStack(spacing: 5) {
-                    Image(systemName: thermalManager.isCoolingTriggered ? "checkmark.circle.fill" : "snowflake")
-                        .font(.system(size: 9.5, weight: .bold))
-                    Text(thermalManager.coolTimerMessage ?? "❄️ Hạ nhiệt tức thì (Đóng băng tiến trình ngầm)")
-                        .font(.system(size: 8.5, weight: .bold))
-                }
-                .padding(.vertical, 5)
-                .frame(maxWidth: .infinity)
-                .background(
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(thermalManager.isCoolingTriggered ? Color.green : Color.cyan.opacity(0.9))
-                )
-                .foregroundStyle(Color.white)
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(8)
-        .background(
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
-                .fill(Color(nsColor: .controlBackgroundColor))
-                .overlay(RoundedRectangle(cornerRadius: 9).stroke(Color.cyan.opacity(0.2), lineWidth: 1))
-        )
     }
 
     // MARK: - 3. Apple Silicon Thermal Matrix (6 Core Metrics)

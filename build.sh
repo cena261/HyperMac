@@ -13,31 +13,42 @@ pkill -9 HyperMac 2>/dev/null || true
 pkill -9 DisplayControl 2>/dev/null || true
 sleep 0.5
 
-# ── Step 1: Build (Universal 2: Apple Silicon + Intel) ──
-echo "🔨 Building HyperMac (Release - Universal 2: arm64 + x86_64)..."
-mkdir -p .build/bin_arm64 .build/bin_x86_64 .build/release
+# ── Step 1: Build (Default: Apple Silicon chip M / Optional: --universal) ──
+BUILD_UNIVERSAL=false
+for arg in "$@"; do
+    if [ "$arg" = "--universal" ]; then
+        BUILD_UNIVERSAL=true
+    fi
+done
 
-echo "  -> Compiling arm64 (Apple Silicon)..."
-swift build -c release --triple arm64-apple-macosx >/dev/null 2>&1 || swift build -c release
-if [ -f ".build/out/Products/Release/HyperMac" ]; then
-    cp .build/out/Products/Release/HyperMac .build/bin_arm64/HyperMac
-elif [ -f ".build/release/HyperMac" ]; then
-    cp .build/release/HyperMac .build/bin_arm64/HyperMac
-fi
+if [ "$BUILD_UNIVERSAL" = "true" ]; then
+    echo "🔨 Building HyperMac (Release - Universal 2: arm64 + x86_64)..."
+    mkdir -p .build/bin_arm64 .build/bin_x86_64 .build/release
+    echo "  -> Compiling arm64 (Apple Silicon)..."
+    swift build -c release --triple arm64-apple-macosx >/dev/null 2>&1 || swift build -c release
+    if [ -f ".build/out/Products/Release/HyperMac" ]; then
+        cp .build/out/Products/Release/HyperMac .build/bin_arm64/HyperMac
+    elif [ -f ".build/release/HyperMac" ]; then
+        cp .build/release/HyperMac .build/bin_arm64/HyperMac
+    fi
 
-echo "  -> Compiling x86_64 (Intel)..."
-swift build -c release --triple x86_64-apple-macosx >/dev/null 2>&1 || true
-if [ -f ".build/out/Products/Release/HyperMac" ]; then
-    cp .build/out/Products/Release/HyperMac .build/bin_x86_64/HyperMac
-fi
+    echo "  -> Compiling x86_64 (Intel)..."
+    swift build -c release --triple x86_64-apple-macosx >/dev/null 2>&1 || true
+    if [ -f ".build/out/Products/Release/HyperMac" ]; then
+        cp .build/out/Products/Release/HyperMac .build/bin_x86_64/HyperMac
+    fi
 
-BINARY=".build/release/HyperMac"
-
-if [ -f ".build/bin_arm64/HyperMac" ] && [ -f ".build/bin_x86_64/HyperMac" ]; then
-    echo "  -> Merging with lipo (Universal 2)..."
-    lipo -create .build/bin_arm64/HyperMac .build/bin_x86_64/HyperMac -output "$BINARY"
-elif [ -f ".build/bin_arm64/HyperMac" ]; then
-    cp .build/bin_arm64/HyperMac "$BINARY"
+    BINARY=".build/release/HyperMac"
+    if [ -f ".build/bin_arm64/HyperMac" ] && [ -f ".build/bin_x86_64/HyperMac" ]; then
+        echo "  -> Merging with lipo (Universal 2)..."
+        lipo -create .build/bin_arm64/HyperMac .build/bin_x86_64/HyperMac -output "$BINARY"
+    elif [ -f ".build/bin_arm64/HyperMac" ]; then
+        cp .build/bin_arm64/HyperMac "$BINARY"
+    fi
+else
+    echo "⚡ Building HyperMac (Tốc độ cao - Chip M: M1/M2/M3/M4)..."
+    swift build -c release
+    BINARY=".build/release/HyperMac"
 fi
 
 if [ ! -f "$BINARY" ]; then
