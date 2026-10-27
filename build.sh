@@ -92,9 +92,13 @@ codesign --force --deep --sign - --identifier "com.opensource.hypermac" "${APP_D
 
 # ── Step 3.1: Create release zip package ──
 echo "📦 Packaging ${BUILD_DIR}/HyperMac.zip for distribution..."
-rm -f "${BUILD_DIR}/HyperMac.zip"
-ditto -c -k --keepParent "${APP_DIR}" "${BUILD_DIR}/HyperMac.zip"
+COPYFILE_DISABLE=1 ditto -c -k --norsrc --keepParent "${APP_DIR}" "${BUILD_DIR}/HyperMac.zip"
 echo "✅ Package created: ${BUILD_DIR}/HyperMac.zip"
+
+if [ "$CI" = "true" ] || [ "$1" = "--no-run" ]; then
+    echo "📦 CI build completed. Artifact is ready at: ${BUILD_DIR}/HyperMac.zip"
+    exit 0
+fi
 
 # ── Step 4: Install to /Applications/ ──
 echo "🚀 Installing to /Applications/HyperMac.app..."

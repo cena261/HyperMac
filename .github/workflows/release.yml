@@ -1,0 +1,50 @@
+name: Build & Release HyperMac
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name (e.g. v1.4.7)'
+        required: true
+        default: 'v1.4.7'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build & Release (Apple Silicon)
+    runs-on: macos-14
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Make Build Script Executable
+        run: chmod +x build.sh
+
+      - name: Compile and Package HyperMac Bundle
+        run: ./build.sh --no-run
+        env:
+          CI: true
+
+      - name: Determine Release Tag
+        id: vars
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.tag_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release and Upload Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.vars.outputs.tag }}
+          name: HyperMac ${{ steps.vars.outputs.tag }}
+          files: build/HyperMac.zip
+          draft: false
+          prerelease: false
+          generate_release_notes: true

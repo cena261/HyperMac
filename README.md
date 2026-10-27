@@ -103,16 +103,21 @@ Trình quản lý lịch sử sao chép với giao diện nổi Liquid Glass, t�
 
 ---
 
-## 📦 Cài Đặt & Khởi Chạy
+## 📦 Cài Đặt & Khởi Chạy (Dành Cho Mọi Người)
 
-### Cách 1: Sử dụng bộ cài dựng sẵn
-Ứng dụng được cài đặt trực tiếp tại:
-```bash
-/Applications/HyperMac.app
-```
-Mở từ Spotlight (`Cmd + Space` gõ `HyperMac`) hoặc bấm vào icon `⌘` trên thanh Menu Bar.
+### 🌟 Cách 1: Tải Bản Cài Đặt Sẵn (Khuyến nghị — Cài trong 30 giây)
+Không cần cài đặt công cụ lập trình hay gõ lệnh phức tạp, ai cũng dùng được ngay:
+1. Tải về gói cài đặt mới nhất: **[Tải HyperMac.zip tại đây](https://github.com/mrgoose000000-gif/HyperMac/releases/latest/download/HyperMac.zip)** (hoặc vào mục [Releases](https://github.com/mrgoose000000-gif/HyperMac/releases) để tải).
+2. Nhấp đúp vào tệp `HyperMac.zip` để giải nén ra ứng dụng **HyperMac.app**.
+3. Kéo **HyperMac.app** vào thư mục **Applications (Ứng dụng)** của máy Mac.
+4. Mở app lần đầu:
+   - Nếu macOS hiện thông báo bảo mật Gatekeeper *"Ứng dụng bị hỏng / không thể mở"* (do app mã nguồn mở không đăng ký chứng chỉ trả phí $99/năm của Apple), bạn chỉ cần mở **Terminal** và dán 1 dòng lệnh duy nhất để gỡ cờ cách ly:
+     ```bash
+     xattr -cr /Applications/HyperMac.app
+     ```
+   - Sau đó bấm mở app từ Spotlight (`Cmd + Space` gõ `HyperMac`) hoặc bấm vào icon `⌘` trên thanh Menu Bar!
 
-### Cách 2: Tự biên dịch từ mã nguồn (Build from source)
+### 🛠️ Cách 2: Tự biên dịch từ mã nguồn (Dành cho Developer)
 Yêu cầu: macOS 14.0 trở lên, Apple Silicon Mac (M1/M2/M3/M4), Xcode Command Line Tools.
 
 ```bash
