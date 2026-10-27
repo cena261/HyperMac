@@ -1,6 +1,6 @@
 # ⚡ HyperMac — Siêu Tiện Ích Tất-Cả-Trong-Một Cho Mac (Apple Silicon & Intel)
 
-[![Version](https://img.shields.io/badge/version-v1.5.0-blue.svg)](https://github.com/mrgoose000000-gif/HyperMac/releases/latest)
+[![Version](https://img.shields.io/badge/version-v1.5.1-blue.svg)](https://github.com/mrgoose000000-gif/HyperMac/releases/latest)
 [![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-black.svg)](https://github.com/mrgoose000000-gif/HyperMac)
 [![Architecture](https://img.shields.io/badge/architecture-Universal%202%20(Apple%20Silicon%20%26%20Intel)-brightgreen.svg)](https://github.com/mrgoose000000-gif/HyperMac)
 [![Memory Footprint](https://img.shields.io/badge/RAM-~45MB-success.svg)](https://github.com/mrgoose000000-gif/HyperMac)
@@ -17,7 +17,7 @@
 ### ⬇️ Bước 1: Tải bộ cài dựng sẵn
 Bấm vào nút bên dưới để tải về phiên bản mới nhất:
 
-[![Download HyperMac](https://img.shields.io/badge/📥_TẢI_VỀ-HyperMac.zip_(v1.5.0)-2563EB?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/mrgoose000000-gif/HyperMac/releases/latest/download/HyperMac.zip)
+[![Download HyperMac](https://img.shields.io/badge/📥_TẢI_VỀ-HyperMac.zip_(v1.5.1)-2563EB?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/mrgoose000000-gif/HyperMac/releases/latest/download/HyperMac.zip)
 
 *(Hoặc vào trang [GitHub Releases](https://github.com/mrgoose000000-gif/HyperMac/releases) để xem danh sách tất cả các bản phát hành).*
 
@@ -175,6 +175,18 @@ chmod +x build.sh
 ---
 
 ## 📝 Nhật Ký Phiên Bản (Changelog)
+
+### [v1.5.1] — 2026-10-28
+- **Tích Hợp Hoàn Hảo Động Cơ Macs Fan Control & Sửa Nhận Diện Quạt M1 Max:**
+  - **Khắc phục nhận diện quạt trên M1 Max / Pro / Studio / Mini**: Tự động nhận diện chính xác phần cứng có quạt tản nhiệt chủ động.
+  - **4 Chế độ quạt chuyên nghiệp**: Tự động (Apple Default), Cố định RPM (Manual với các mốc gợi ý), Theo cảm biến (Smart Curve tuyến tính an toàn), và Tối đa 100% (Turbo Boost).
+  - **Giám sát trực tiếp trên Menu Bar**: Tùy chọn hiển thị nhiệt độ tức thời (`44°C`) và tốc độ quạt (`44°C • 1.5k`) ngay cạnh biểu tượng ứng dụng trên thanh trạng thái macOS.
+  - **Cơ chế an toàn phần cứng SMC**: Tự động trả quạt về chế độ Auto an toàn của Apple khi máy Sleep, Wake hoặc thoát ứng dụng.
+  - **Loại bỏ cơ chế hạ nhiệt cưỡng bức**: Loại bỏ hoàn toàn đóng băng tiến trình ngầm (`SIGSTOP`) để ngăn ngừa đơ ứng dụng.
+- **Sửa Triệt Để Lỗi Màn Hình Ảo (Virtual Display):**
+  - Xây dựng cầu nối ARC Objective-C `VirtualDisplayBridge` giải phóng bộ nhớ `CGVirtualDisplay` khi tắt màn ảo, ngăn chặn xuất hiện màn hình ảo phantom `U280-Pro`.
+- **Gộp Pull Request #1:**
+  - Giải quyết triệt để xung đột phím tắt Clipboard Manager (`Cmd+Shift+C`/`V`) với các bộ gõ tiếng Việt (GoTiengViet, EVKey).
 
 ### [v1.5.0] — 2026-10-27
 - **Tích Hợp Kiểm Soát Nhiệt & Quạt Tản Nhiệt (Macs Fan Control + Apple Silicon Thermal Suite):**

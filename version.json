@@ -1,7 +1,7 @@
 {
-  "version": "1.5.0",
-  "name": "HyperMac v1.5.0 (Thermal & Fan Control + Universal 2)",
-  "notes": "✨ Tính năng mới trong v1.5.0:\n- 🌡️ Tích hợp Kiểm soát Nhiệt độ & Quạt tản nhiệt (Macs Fan Control Suite).\n- 🧠 Đọc trực tiếp 30+ cảm biến nhiệt PMU HID trên chip Apple Silicon M1/M2/M3/M4.\n- ❄️ Tản nhiệt tức thì cho MacBook Air không quạt (Đóng băng tiến trình nặng ngầm).\n- 🎚️ Điều khiển 4 chế độ quạt cho MacBook Pro/Studio/Mini (Auto, Manual RPM, Boost 100%, Smart Curve).\n- 🚀 Đóng gói Universal 2: Hỗ trợ native 100% cả chip Apple Silicon và chip Intel (Core i3/i5/i7/i9).",
-  "download_url": "https://github.com/mrgoose000000-gif/HyperMac/releases/download/v1.5.0/HyperMac.zip",
-  "html_url": "https://github.com/mrgoose000000-gif/HyperMac/releases/tag/v1.5.0"
+  "version": "1.5.1",
+  "name": "HyperMac v1.5.1 (Macs Fan Control Suite + M1 Max Fix + Stability Update)",
+  "notes": "✨ Tính năng mới & Cải tiến trong v1.5.1:\n- 🌀 Tích hợp hoàn chỉnh động cơ Macs Fan Control: 4 chế độ (Tự động, Cố định RPM, Theo cảm biến tùy chỉnh Smart Curve, Tối đa 100% Boost).\n- 🎯 Nhận diện quạt chuẩn xác 100% trên chip Apple Silicon M1 Max, M1/M2/M3/M4 Pro/Max, Mac Studio, Mac mini.\n- 📊 Giám sát Menu Bar trực tiếp: Hiển thị nhiệt độ (°C) và tốc độ quạt (RPM) theo thời gian thực trên thanh trạng thái macOS.\n- 🛡️ An toàn phần cứng tuyệt đối: Tự động khôi phục quạt về mặc định của Apple khi Sleep, Wake hoặc thoát ứng dụng.\n- 🚀 Loại bỏ tính năng hạ nhiệt cưỡng bức tránh treo ứng dụng nền.\n- 🖥️ Sửa dứt điểm lỗi màn ảo phantom U280-Pro khi bật/tắt màn hình ảo qua VirtualDisplayBridge ARC.\n- 📋 Gộp PR #1: Giải quyết triệt để xung đột phím tắt Clipboard với bộ gõ tiếng Việt (GoTiengViet, EVKey).",
+  "download_url": "https://github.com/mrgoose000000-gif/HyperMac/releases/download/v1.5.1/HyperMac.zip",
+  "html_url": "https://github.com/mrgoose000000-gif/HyperMac/releases/tag/v1.5.1"
 }
